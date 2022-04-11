@@ -400,7 +400,7 @@ export default defineComponent({
         'Background Options',
       ],
       text_qr: '',
-      seletedButton: 2,
+      seletedButton: 0,
       buttonTabs: [
         'WIFI',
         'Text',
@@ -429,25 +429,25 @@ export default defineComponent({
 
 <template>
   <Navbar />
-  <div class="sm:container sm:mx-auto sm:py-10">
-    <div class="grid grid-cols-3 gap-10">
-      <div class="col-span-12 md:col-span-6 lg:col-span-2 text-left p-10 drop-shadow-lg bg-white sm:rounded">
-        <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
-          QR Data
-        </h2>
-        <div class="flex flex-nowrap mb-5">
-          <div v-for="(v, i) in buttonTabs" :key="i">
-            <button 
-              :class="`bg-transaparent border-b-2 border-${seletedButton === i ? 'gray-700' : 'transparent'} text-gray-700 mr-5`"
-              @click="seletedButton = i"
-            >
-              {{ v }}
-            </button>
+  <div class="container mx-auto sm:py-10">
+    <div class="w-full gap-10 md:flex">
+      <div class="w-full md:w-3/5">
+        <div class="text-left p-10 drop-shadow-lg bg-white sm:rounded">
+          <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
+            QR Data
+          </h2>
+          <div class="flex flex-nowrap mb-5">
+            <div v-for="(v, i) in buttonTabs" :key="i">
+              <button 
+                :class="`bg-transaparent border-b-2 border-${seletedButton === i ? 'gray-700' : 'transparent'} text-gray-700 mr-5`"
+                @click="seletedButton = i"
+              >
+                {{ v }}
+              </button>
+            </div>
           </div>
-        </div>
-        <transition name="fade" mode="out-in">
-          <div v-if="seletedButton === 0">
-            <div class="grid grid-cols-2 gap-5">        
+          <transition name="fade" mode="out-in">
+            <div v-if="seletedButton === 0" class="grid sm:grid-cols-2 gap-5">       
               <div>
                 <label for="ssid" class="block text-sm font-medium text-gray-700">SSID</label>
                 <input 
@@ -492,186 +492,186 @@ export default defineComponent({
                 </button>
               </div>
             </div>
-          </div>
-          <div v-else-if="seletedButton === 1">
-            <textarea 
-              id="text_qr" 
-              name="text_qr" 
-              v-model="text_qr"
-              rows="3"
-              class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" 
-              placeholder="Input your text to generate QR code." 
-            />
-            <div class="py-6 text-right">
-              <button :disabled="!text_qr" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Generate
-              </button>
+            <div v-else-if="seletedButton === 1">
+              <textarea 
+                id="text_qr" 
+                name="text_qr" 
+                v-model="text_qr"
+                rows="3"
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" 
+                placeholder="Input your text to generate QR code." 
+              />
+              <div class="py-6 text-right">
+                <button :disabled="!text_qr" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Generate
+                </button>
+              </div>
+            </div>        
+            <div v-else-if="seletedButton === 2">
+              <div class="grid sm:grid-cols-2 gap-5">        
+                <div>
+                  <label for="firstname" class="block text-sm font-medium text-gray-700">Firstname</label>
+                  <input 
+                    type="text" 
+                    name="firstname" 
+                    v-model="vcard.firstname"
+                    id="firstname" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="lastname" class="block text-sm font-medium text-gray-700">Lastname</label>
+                  <input 
+                    type="text" 
+                    name="lastname" 
+                    v-model="vcard.lastname"
+                    id="lastname" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
+                  <litepie-datepicker
+                    id="birthday"
+                    :formatter="{
+                      date: 'DD MMM YYYY',
+                      month: 'MMM'
+                    }"
+                    class="mt-1"
+                    as-single
+                    v-model="vcard.bd"
+                  ></litepie-datepicker>
+                </div>
+                <div>
+                  <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                  <select id="gender" v-model="vcard.gender" name="gender" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                  <input 
+                    type="text" 
+                    name="address" 
+                    v-model="vcard.address"
+                    id="address" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                  <input 
+                    type="text" 
+                    name="city" 
+                    v-model="vcard.city"
+                    id="city" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="postal" class="block text-sm font-medium text-gray-700">Postal Code</label>
+                  <input 
+                    type="text" 
+                    name="postal" 
+                    v-model="vcard.postal"
+                    id="postal" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="region" class="block text-sm font-medium text-gray-700">Region</label>
+                  <input 
+                    type="text" 
+                    name="region" 
+                    v-model="vcard.region"
+                    id="region" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                  <input 
+                    type="text" 
+                    name="country" 
+                    v-model="vcard.country"
+                    id="country" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="tel" class="block text-sm font-medium text-gray-700">Tel</label>
+                  <input 
+                    type="text" 
+                    name="tel" 
+                    v-model="vcard.tel"
+                    id="tel" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                  <input 
+                    type="text" 
+                    name="email" 
+                    v-model="vcard.email"
+                    id="email" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="web" class="block text-sm font-medium text-gray-700">Web</label>
+                  <input 
+                    type="text" 
+                    name="web" 
+                    v-model="vcard.web"
+                    id="web" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="job" class="block text-sm font-medium text-gray-700">Job</label>
+                  <input 
+                    type="text" 
+                    name="job" 
+                    v-model="vcard.job"
+                    id="job" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+                <div>
+                  <label for="name" class="block text-sm font-medium text-gray-700">Company</label>
+                  <input 
+                    type="text" 
+                    name="name" 
+                    v-model="vcard.company"
+                    id="name" 
+                    autocomplete="off" 
+                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  />
+                </div>
+              </div>
+              <div class="py-6 text-right">
+                <button @click="handleVCard" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Generate
+                </button>
+              </div>
             </div>
-          </div>        
-          <div v-else-if="seletedButton === 2">
-            <div class="grid grid-cols-2 gap-5">        
-              <div>
-                <label for="firstname" class="block text-sm font-medium text-gray-700">Firstname</label>
-                <input 
-                  type="text" 
-                  name="firstname" 
-                  v-model="vcard.firstname"
-                  id="firstname" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="lastname" class="block text-sm font-medium text-gray-700">Lastname</label>
-                <input 
-                  type="text" 
-                  name="lastname" 
-                  v-model="vcard.lastname"
-                  id="lastname" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
-                <litepie-datepicker
-                  id="birthday"
-                  :formatter="{
-                    date: 'DD MMM YYYY',
-                    month: 'MMM'
-                  }"
-                  class="mt-1"
-                  as-single
-                  v-model="vcard.bd"
-                ></litepie-datepicker>
-              </div>
-              <div>
-                <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
-                <select id="gender" v-model="vcard.gender" name="gender" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-              <div>
-                <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-                <input 
-                  type="text" 
-                  name="address" 
-                  v-model="vcard.address"
-                  id="address" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                <input 
-                  type="text" 
-                  name="city" 
-                  v-model="vcard.city"
-                  id="city" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="postal" class="block text-sm font-medium text-gray-700">Postal Code</label>
-                <input 
-                  type="text" 
-                  name="postal" 
-                  v-model="vcard.postal"
-                  id="postal" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="region" class="block text-sm font-medium text-gray-700">Region</label>
-                <input 
-                  type="text" 
-                  name="region" 
-                  v-model="vcard.region"
-                  id="region" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
-                <input 
-                  type="text" 
-                  name="country" 
-                  v-model="vcard.country"
-                  id="country" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="tel" class="block text-sm font-medium text-gray-700">Tel</label>
-                <input 
-                  type="text" 
-                  name="tel" 
-                  v-model="vcard.tel"
-                  id="tel" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input 
-                  type="text" 
-                  name="email" 
-                  v-model="vcard.email"
-                  id="email" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="web" class="block text-sm font-medium text-gray-700">Web</label>
-                <input 
-                  type="text" 
-                  name="web" 
-                  v-model="vcard.web"
-                  id="web" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="job" class="block text-sm font-medium text-gray-700">Job</label>
-                <input 
-                  type="text" 
-                  name="job" 
-                  v-model="vcard.job"
-                  id="job" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-              <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">Company</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  v-model="vcard.company"
-                  id="name" 
-                  autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                />
-              </div>
-            </div>
-            <div class="py-6 text-right">
-              <button @click="handleVCard" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Generate
-              </button>
-            </div>
-          </div>
-        </transition>
+          </transition>
+        </div>
       </div>
-      <div class="col-span-12 md:col-span-6 lg:col-span-1">
+      <div class="w-full sm:mt-10 md:mt-0 md:w-2/5">
         <div class="p-10 drop-shadow-lg bg-white sm:rounded">
           <transition name="fade" mode="out-in">
             <div 
