@@ -47,7 +47,9 @@ import QRCodeStyling, {
   DotType,
   CornerSquareType,
   CornerDotType,
-  FileExtension
+  FileExtension,
+  Gradient,
+  GradientType
 } from 'qr-code-styling'
 import Navbar from './components/Navbar.vue'
 
@@ -56,7 +58,8 @@ export default defineComponent({
     Navbar
   },
   mounted() {
-    this.qrCode.append(this.$refs.qrCode)
+    const qrEle = this.$refs.qrCode as HTMLElement
+    this.qrCode.append(qrEle)
   },
   watch: {
     size(val) {
@@ -68,17 +71,20 @@ export default defineComponent({
     },
     activeKeyBg(val) {
       if (val === 'gradient') {
-        this.options.backgroundOptions.gradient = {
-          type: 'linear',
+        const gradientObj: Gradient = {
+          type: 'linear' as GradientType,
           rotation: parseInt(this.gradientBgArray[0]),
           colorStops: this.gradientBgArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
-        }        
-        setTimeout(() => this.accordionMaxHeight = this.$refs['container_4'][0].firstChild.offsetHeight, 500)
+        }
+        this.options.backgroundOptions.gradient = gradientObj 
+        const refEle = this.$refs['container_4'] as HTMLCollection
+        const findChild = refEle[0].firstChild as HTMLElement
+        setTimeout(() => this.accordionMaxHeight = findChild.offsetHeight, 500)
       } else {
-        this.options.backgroundOptions.gradient = false
+        this.options.backgroundOptions.gradient = false as unknown as Gradient
       }
     },    
     gradientBgType(val) {
@@ -90,11 +96,11 @@ export default defineComponent({
       this.gradientBgArray = this.splitLinear(val)
       if (this.activeKeyBg === 'gradient') {          
         this.options.backgroundOptions.gradient = {
-          type: this.gradientBgType,
+          type: this.gradientBgType as GradientType,
           rotation: parseInt(this.gradientBgArray[0]),
           colorStops: this.gradientBgArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
         }
       }
@@ -102,16 +108,18 @@ export default defineComponent({
     activeKeyDot(val) {
       if (val === 'gradient') {
         this.options.cornersDotOptions.gradient = {
-          type: 'linear',
+          type: 'linear' as GradientType,
           rotation: parseInt(this.gradientDotArray[0]),
           colorStops: this.gradientDotArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
-        }        
-        setTimeout(() => this.accordionMaxHeight = this.$refs['container_3'][0].firstChild.offsetHeight, 500)
+        }    
+        const refEle = this.$refs['container_3'] as HTMLCollection
+        const findChild = refEle[0].firstChild as HTMLElement    
+        setTimeout(() => this.accordionMaxHeight = findChild.offsetHeight, 500)
       } else {
-        this.options.cornersDotOptions.gradient = false
+        this.options.cornersDotOptions.gradient = false as unknown as Gradient
       }
     },    
     gradientDotType(val) {
@@ -123,11 +131,11 @@ export default defineComponent({
       this.gradientDotArray = this.splitLinear(val)
       if (this.activeKeyDot === 'gradient') {          
         this.options.cornersDotOptions.gradient = {
-          type: this.gradientDotType,
+          type: this.gradientDotType as GradientType,
           rotation: parseInt(this.gradientDotArray[0]),
           colorStops: this.gradientDotArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
         }
       }
@@ -139,12 +147,14 @@ export default defineComponent({
           rotation: parseInt(this.gradientSquareArray[0]),
           colorStops: this.gradientSquareArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
         }        
-        setTimeout(() => this.accordionMaxHeight = this.$refs['container_2'][0].firstChild.offsetHeight, 500)
+        const refEle = this.$refs['container_2'] as HTMLCollection
+        const findChild = refEle[0].firstChild as HTMLElement   
+        setTimeout(() => this.accordionMaxHeight = findChild.offsetHeight, 500)
       } else {
-        this.options.cornersSquareOptions.gradient = false
+        this.options.cornersSquareOptions.gradient = false as unknown as Gradient
       }
     },    
     gradientSquareType(val) {
@@ -156,11 +166,11 @@ export default defineComponent({
       this.gradientSquareArray = this.splitLinear(val)
       if (this.activeKeySquare === 'gradient') {          
         this.options.cornersSquareOptions.gradient = {
-          type: this.gradientSquareType,
+          type: this.gradientSquareType as GradientType,
           rotation: parseInt(this.gradientSquareArray[0]),
           colorStops: this.gradientSquareArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
         }
       }
@@ -172,12 +182,14 @@ export default defineComponent({
           rotation: parseInt(this.gradientArray[0]),
           colorStops: this.gradientArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
         }        
-        setTimeout(() => this.accordionMaxHeight = this.$refs['container_1'][0].firstChild.offsetHeight, 100)
+        const refEle = this.$refs['container_1'] as HTMLCollection
+        const findChild = refEle[0].firstChild as HTMLElement   
+        setTimeout(() => this.accordionMaxHeight = findChild.offsetHeight, 100)
       } else {
-        this.options.dotsOptions.gradient = false
+        this.options.dotsOptions.gradient = false as unknown as Gradient
       }
     },
     gradientType(val) {
@@ -189,11 +201,11 @@ export default defineComponent({
       this.gradientArray = this.splitLinear(val)
       if (this.activeKey === 'gradient') {          
         this.options.dotsOptions.gradient = {
-          type: this.gradientType,
+          type: this.gradientType as GradientType,
           rotation: parseInt(this.gradientArray[0]),
           colorStops: this.gradientArray.slice(1, 3).map((v, i) => ({
             offset: i,
-            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+            color: this.rgbaToHex(v.match(/\d+/g)!.slice(0, 3)) as string
           })),
         }
       }
@@ -222,7 +234,8 @@ export default defineComponent({
     },
     seletedAccordion(val) {
       if (val >= 0) {
-        this.accordionMaxHeight = this.$refs[`container_${val}`][0].scrollHeight
+        const refEle = this.$refs[`container_${val}`] as HTMLCollection 
+        this.accordionMaxHeight = refEle[0].scrollHeight
       } else {
         this.accordionMaxHeight = 0
       }
@@ -248,7 +261,7 @@ export default defineComponent({
       return ''
     },
     splitLinear(str: string) {
-      return str.substring(str.indexOf('(') + 1, str.lastIndexOf(')')).split(/,(?![^(]*\))(?![^"']*["'](?:[^"']*["'][^"']*["'])*[^"']*$)/);
+      return str.substring(str.indexOf('(') + 1, str.lastIndexOf(')')).split(/,(?![^(]*\))(?![^"']*["'](?:[^"']*["'][^"']*["'])*[^"']*$)/)
     },
     generateQr() {
       this.options.data = `WIFI:S:${this.form.ssid};T:${this.form.encrytion};P:${this.form.password};;`
@@ -264,11 +277,11 @@ export default defineComponent({
         this.passwordType = 'password'
       }
     },
-    handleUpload(e) {
+    handleUpload(e: any) {
       const reader = new FileReader()
       reader.readAsDataURL(e.target.files[0])
       reader.onload = () => {
-        this.options.image = reader.result
+        this.options.image = reader.result as string
       }
       reader.onerror = error => {
         console.log('Error: ', error)
@@ -296,18 +309,22 @@ export default defineComponent({
       },
       dotsOptions: {
         color: '#41b583',
-        type: 'rounded' as DotType
+        type: 'rounded' as DotType,
+        gradient: false as unknown as Gradient
       },
       backgroundOptions: {
         color: '#ffffff',
+        gradient: false as unknown as Gradient
       },
       cornersSquareOptions: {
         color: '#35495E',
         type: 'extra-rounded' as CornerSquareType,
+        gradient: false as unknown as Gradient
       },
       cornersDotOptions: {
         color: '#35495E',
         type: 'dot' as CornerDotType,
+        gradient: false as unknown as Gradient
       }
     }
     

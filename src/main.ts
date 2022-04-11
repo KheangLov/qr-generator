@@ -4,7 +4,7 @@ import App from './App.vue'
 import Vue3ColorPicker from "vue3-colorpicker"
 import "vue3-colorpicker/style.css"
 import './assets/style.css'
-const intervalMS = 60 * 60 * 1000
+// const intervalMS = 60 * 60 * 1000
 // const updateSW = registerSW({
 //   onNeedRefresh(r) {
 //     r && setInterval(() => {
