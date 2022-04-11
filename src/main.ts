@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 // import { registerSW } from 'virtual:pwa-register'
 import Vue3ColorPicker from "vue3-colorpicker"
+// @ts-ignore
 import LitepieDatepicker from 'litepie-datepicker'
 import "vue3-colorpicker/style.css"
 import './assets/style.css'
