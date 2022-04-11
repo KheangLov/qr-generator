@@ -58,8 +58,7 @@ export default defineComponent({
     Navbar
   },
   mounted() {
-    const qrEle = this.$refs.qrCode as HTMLElement
-    this.qrCode.append(qrEle)
+    this.loadQR()
   },
   watch: {
     size(val) {
@@ -211,16 +210,25 @@ export default defineComponent({
       }
     },
     options: {
-      handler() {     
-        if (this.options.imageOptions.imageSize > 1) {
-          this.options.imageOptions.imageSize = 1
-        } else if (this.options.imageOptions.imageSize < 0) {
-          this.options.imageOptions.imageSize = 0
-        }
+      handler() {    
+        if (!this.options.data) {
+          setTimeout(() => this.qrCode.update(this.options), 500)
+        } else {
+          if (this.options.imageOptions.imageSize > 1) {
+            this.options.imageOptions.imageSize = 1
+          } else if (this.options.imageOptions.imageSize < 0) {
+            this.options.imageOptions.imageSize = 0
+          }
 
-        if (this.options.width >= 300 && this.options.height >= 300) {
-          this.qrCode.update(this.options)
-        }        
+          if (this.options.width >= 300 && this.options.height >= 300) {
+            setTimeout(() => {
+              if (this.$refs.qrCode) {
+                this.loadQR()
+              }
+              setTimeout(() => this.qrCode.update(this.options), 500)
+            }, 1000)
+          }  
+        }         
       },
       deep: true,
     },
@@ -242,6 +250,28 @@ export default defineComponent({
     }
   },
   methods: {
+    loadQR() {
+      const qrEle = this.$refs.qrCode as HTMLElement
+      this.qrCode.append(qrEle)
+    },
+    handleVCard() {
+      if (this.vcard.bd.length) {
+        this.vcard.bd = this.vcard.bd[0]
+      }
+
+      this.options.data = 'BEGIN:VCARD\nVERSION:3.0\n'
+      this.options.data += `N:${this.vcard.lastname};${this.vcard.firstname}\n`
+      this.options.data += `FN:${this.vcard.firstname} ${this.vcard.lastname}\n`
+      this.options.data += `BDAY:${this.vcard.bd}\n`
+      this.options.data += `X-GENDER:${this.vcard.gender}\n`
+      this.options.data += `ADR:;;${this.vcard.address};${this.vcard.city};${this.vcard.region};${this.vcard.postal};${this.vcard.country}\n`
+      this.options.data += `TEL;CELL:${this.vcard.tel}\n`
+      this.options.data += `EMAIL;WORK;INTERNET:${this.vcard.email}\n`
+      this.options.data += `URL:${this.vcard.web}\n`
+      this.options.data += `ORG:${this.vcard.company}\n`
+      this.options.data += `TITLE:${this.vcard.job}\n`
+      this.options.data += 'END:VCARD'
+    },
     handleActiveKey(val: string) {
       this.activeKey = val
     },
@@ -264,8 +294,12 @@ export default defineComponent({
       return str.substring(str.indexOf('(') + 1, str.lastIndexOf(')')).split(/,(?![^(]*\))(?![^"']*["'](?:[^"']*["'][^"']*["'])*[^"']*$)/)
     },
     generateQr() {
-      this.options.data = `WIFI:S:${this.form.ssid};T:${this.form.encrytion};P:${this.form.password};;`
-      this.disableButton = true
+      if (this.seletedButton === 0) {
+        this.options.data = `WIFI:S:${this.form.ssid};T:${this.form.encrytion};P:${this.form.password};;`
+        this.disableButton = true
+      } else if (this.seletedButton === 1) {
+        this.options.data = this.text_qr
+      }
     },
     download() {
       this.qrCode.download({ extension: this.extension as FileExtension })
@@ -365,6 +399,29 @@ export default defineComponent({
         'Corners Dot Options',
         'Background Options',
       ],
+      text_qr: '',
+      seletedButton: 2,
+      buttonTabs: [
+        'WIFI',
+        'Text',
+        'vCard'
+      ],
+      vcard: {
+        firstname: '',
+        lastname: '',
+        bd: [],
+        gender: 'Male',
+        address: '',
+        city: '',
+        postal: '',
+        region: '',
+        country: '',
+        tel: '',
+        email: '',
+        web: '',
+        job: '',
+        company: '',
+      },
     }
   }
 })
@@ -373,435 +430,639 @@ export default defineComponent({
 <template>
   <Navbar />
   <div class="sm:container sm:mx-auto sm:py-10">
-    <div class="w-full drop-shadow-lg bg-white overflow-hidden sm:rounded md:flex">
-      <div class="md:w-1/3 text-left p-10">
+    <div class="grid grid-cols-3 gap-10">
+      <div class="col-span-12 md:col-span-6 lg:col-span-2 text-left p-10 drop-shadow-lg bg-white sm:rounded">
         <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
           QR Data
         </h2>
-        <div class="grid grid-cols-3 gap-4">        
-          <div class="col-span-12">
-            <label for="ssid" class="block text-sm font-medium text-gray-700">SSID</label>
-            <input 
-              type="text" 
-              name="ssid" 
-              v-model="form.ssid"
-              id="ssid" 
-              autocomplete="off" 
-              class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+        <div class="flex flex-nowrap mb-5">
+          <div v-for="(v, i) in buttonTabs" :key="i">
+            <button 
+              :class="`bg-transaparent border-b-2 border-${seletedButton === i ? 'gray-700' : 'transparent'} text-gray-700 mr-5`"
+              @click="seletedButton = i"
+            >
+              {{ v }}
+            </button>
+          </div>
+        </div>
+        <transition name="fade" mode="out-in">
+          <div v-if="seletedButton === 0">
+            <div class="grid grid-cols-2 gap-5">        
+              <div>
+                <label for="ssid" class="block text-sm font-medium text-gray-700">SSID</label>
+                <input 
+                  type="text" 
+                  name="ssid" 
+                  v-model="form.ssid"
+                  id="ssid" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div class="relative">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input 
+                  :type="passwordType" 
+                  name="password" 
+                  v-model="form.password"
+                  id="password" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />                    
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                  <button 
+                    @click="passwordVisible"
+                    class="mt-6"
+                    v-text="passwordType === 'password' ? 'show' : 'hide'"
+                  >
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label for="encrytion" class="block text-sm font-medium text-gray-700">Encrytion</label>
+                <select id="encrytion" v-model="form.encrytion" name="encrytion" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  <option value="WPA">WPA/WPA2/WPA3</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">None</option>
+                </select>
+              </div>
+              <div class="py-6 text-right">
+                <button :disabled="disableButton" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Generate
+                </button>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="seletedButton === 1">
+            <textarea 
+              id="text_qr" 
+              name="text_qr" 
+              v-model="text_qr"
+              rows="3"
+              class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" 
+              placeholder="Input your text to generate QR code." 
             />
-          </div>
-          <div class="col-span-12">
-            <label for="encrytion" class="block text-sm font-medium text-gray-700">Encrytion</label>
-            <select id="encrytion" v-model="form.encrytion" name="encrytion" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-              <option value="WPA">WPA/WPA2/WPA3</option>
-              <option value="WEP">WEP</option>
-              <option value="nopass">None</option>
-            </select>
-          </div>
-          <div class="col-span-12 relative">
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input 
-              :type="passwordType" 
-              name="password" 
-              v-model="form.password"
-              id="password" 
-              autocomplete="off" 
-              class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-            />                    
-            <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-              <button 
-                @click="passwordVisible"
-                class="mt-6"
-                v-text="passwordType === 'password' ? 'show' : 'hide'"
-              >
+            <div class="py-6 text-right">
+              <button :disabled="!text_qr" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Generate
+              </button>
+            </div>
+          </div>        
+          <div v-else-if="seletedButton === 2">
+            <div class="grid grid-cols-2 gap-5">        
+              <div>
+                <label for="firstname" class="block text-sm font-medium text-gray-700">Firstname</label>
+                <input 
+                  type="text" 
+                  name="firstname" 
+                  v-model="vcard.firstname"
+                  id="firstname" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="lastname" class="block text-sm font-medium text-gray-700">Lastname</label>
+                <input 
+                  type="text" 
+                  name="lastname" 
+                  v-model="vcard.lastname"
+                  id="lastname" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
+                <litepie-datepicker
+                  id="birthday"
+                  :formatter="{
+                    date: 'DD MMM YYYY',
+                    month: 'MMM'
+                  }"
+                  class="mt-1"
+                  as-single
+                  v-model="vcard.bd"
+                ></litepie-datepicker>
+              </div>
+              <div>
+                <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                <select id="gender" v-model="vcard.gender" name="gender" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                <input 
+                  type="text" 
+                  name="address" 
+                  v-model="vcard.address"
+                  id="address" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                <input 
+                  type="text" 
+                  name="city" 
+                  v-model="vcard.city"
+                  id="city" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="postal" class="block text-sm font-medium text-gray-700">Postal Code</label>
+                <input 
+                  type="text" 
+                  name="postal" 
+                  v-model="vcard.postal"
+                  id="postal" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="region" class="block text-sm font-medium text-gray-700">Region</label>
+                <input 
+                  type="text" 
+                  name="region" 
+                  v-model="vcard.region"
+                  id="region" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                <input 
+                  type="text" 
+                  name="country" 
+                  v-model="vcard.country"
+                  id="country" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="tel" class="block text-sm font-medium text-gray-700">Tel</label>
+                <input 
+                  type="text" 
+                  name="tel" 
+                  v-model="vcard.tel"
+                  id="tel" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input 
+                  type="text" 
+                  name="email" 
+                  v-model="vcard.email"
+                  id="email" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="web" class="block text-sm font-medium text-gray-700">Web</label>
+                <input 
+                  type="text" 
+                  name="web" 
+                  v-model="vcard.web"
+                  id="web" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="job" class="block text-sm font-medium text-gray-700">Job</label>
+                <input 
+                  type="text" 
+                  name="job" 
+                  v-model="vcard.job"
+                  id="job" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Company</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  v-model="vcard.company"
+                  id="name" 
+                  autocomplete="off" 
+                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                />
+              </div>
+            </div>
+            <div class="py-6 text-right">
+              <button @click="handleVCard" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Generate
               </button>
             </div>
           </div>
-        </div>
-        <div class="py-6 text-right">
-          <button :disabled="disableButton" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Generate
-          </button>
-        </div>
+        </transition>
       </div>
-      <div class="md:w-1/3 p-10">
-        <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
-          QR Options
-        </h2>
-        <div class="bg-white border border-gray-300 rounded shadow-sm">
-          <ul>
-            <li 
-              v-for="(v, i) in accordionNames"
-              class="relative border-b border-gray-300"
-              :key="i"
+      <div class="col-span-12 md:col-span-6 lg:col-span-1">
+        <div class="p-10 drop-shadow-lg bg-white sm:rounded">
+          <transition name="fade" mode="out-in">
+            <div 
+              v-if="options.data"
+              class="text-center overflow-hidden"
             >
-              <button 
-                type="button" 
-                class="w-full p-5 text-left"
-                @click="seletedAccordion = seletedAccordion === i ? -1 : i"
-              >
-                <div class="flex items-center justify-between">
-                  <h4 class="block font-medium text-gray-700">
-                    {{ v }}:
-                  </h4>
-                  <span class="ico-plus"></span>
-                </div>
-              </button>
-              <div 
-                :ref="`container_${i}`"
-                class="relative overflow-hidden transition-all max-h-0 duration-700"     
-                :style="seletedAccordion === i ? `max-height: ${accordionMaxHeight}px` : ''"                                    
-              >
-                <div class="grid gap-4 p-5 pt-0">
-                  <template 
-                    v-if="i === 0"
-                    class="relative overflow-hidden transition-all duration-700" 
-                  >   
-                    <div class="col-span-12">
-                      <label class="block text-sm font-medium text-gray-700">
-                        Image
-                      </label>
-                      <div class="flex text-sm text-gray-600 mt-1">
-                        <label 
-                          for="file-upload" 
-                          class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                        >
-                          <span
-                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                          >
-                            Upload a file
-                          </span>
-                          <input 
-                            id="file-upload" 
-                            name="file-upload" 
-                            type="file" 
-                            class="sr-only" 
-                            accept="image/png, image/jpg, image/jpeg"
-                            @change="handleUpload"               
-                          />
-                        </label>
-                        <button 
-                          v-if="options.image"
-                          @click="options.image = ''" 
-                          class="ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    </div> 
-                    <div class="col-span-12">
-                      <label for="hide_bg" class="block text-sm font-medium text-gray-700">Hide Background</label>
-                      <input 
-                        id="hide_bg" 
-                        name="hide_bg"
-                        v-model="options.imageOptions.hideBackgroundDots" 
-                        type="checkbox" 
-                        class="checkbox__input focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" 
-                      />
-                      <label for="hide_bg" class="mt-1 checkbox__inner border-gray-300"></label>
-                    </div>
-                    <div class="col-span-6">
-                      <label for="image_size" class="block text-sm font-medium text-gray-700">Image Size</label>                    
-                      <input 
-                        type="number" 
-                        name="image_size" 
-                        v-model="options.imageOptions.imageSize"
-                        id="image_size" 
-                        autocomplete="off" 
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                      />
-                    </div>
-                    <div class="col-span-6">
-                      <label for="image_margin" class="block text-sm font-medium text-gray-700">Image Margin</label>
-                      <input 
-                        type="number" 
-                        name="image_margin" 
-                        v-model="options.imageOptions.margin"
-                        id="image_margin" 
-                        autocomplete="off" 
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                      />
-                    </div>   
-                    <div class="col-span-6">
-                      <label for="size" class="block text-sm font-medium text-gray-700">Size</label>
-                      <input 
-                        type="number" 
-                        name="size" 
-                        v-model="size"
-                        id="size" 
-                        autocomplete="off" 
-                        min="300"
-                        class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                      />
-                    </div>
-                    <div class="col-span-6">
-                      <label for="margin" class="block text-sm font-medium text-gray-700">Margin</label>
-                      <input 
-                        type="number" 
-                        name="margin" 
-                        v-model="options.margin"
-                        id="margin" 
-                        autocomplete="off" 
-                        class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
-                      />
-                    </div>
-                    <div class="col-span-12">
-                      <label for="errorCorrectionLevel" class="block text-sm font-medium text-gray-700">Error Correction Level</label>
-                      <select 
-                        id="errorCorrectionLevel" 
-                        v-model="options.qrOptions.errorCorrectionLevel" 
-                        name="square_type" 
-                        class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      >
-                        <option value="L">L</option>
-                        <option value="M">M</option>
-                        <option value="Q">Q</option>
-                        <option value="H">H</option>
-                      </select>
-                    </div>
-                  </template>
-                  <template 
-                    v-else-if="i === 1"
-                    class="relative overflow-hidden transition-all duration-700"
-                  >       
-                    <div class="col-span-12">
-                      <label for="dots_type" class="block text-sm font-medium text-gray-700">Dots Type</label>
-                      <select id="dots_type" v-model="options.dotsOptions.type" name="dots_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="square">Square</option>
-                        <option value="dots">Dots</option>
-                        <option value="rounded">Rounded</option>
-                        <option value="extra-rounded">Extra rounded</option>
-                        <option value="classy">Classy</option>
-                        <option value="classy-rounded">Classy rounded</option>
-                      </select>
-                    </div>
-                    <div 
-                      v-if="activeKey === 'gradient'"
-                      class="col-span-12"
-                    >
-                      <div class="space-y-4">
-                        <div 
-                          v-for="(v, k) in ['linear', 'radial']"
-                          class="flex items-center"
-                          :key="k"
-                        >
-                          <input 
-                            :id="`gradient_type_${v}`" 
-                            :name="`gradient_type_${v}`" 
-                            type="radio"
-                            :value="v"
-                            v-model="gradientType"
-                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
-                          />
-                          <label 
-                            :for="`gradient_type_${v}`" 
-                            class="ml-3 block text-sm font-medium text-gray-700 capitalize"
-                          > 
-                            {{ v }} 
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-span-6">
-                      <label for="dots_color" class="block text-sm font-medium text-gray-700">Dots Color</label>
-                      <color-picker 
-                        id="dots_color"
-                        v-model:pureColor="options.dotsOptions.color" 
-                        v-model:gradientColor="gradient" 
-                        @update:activeKey="handleActiveKey($event)"
-                        picker-type="fk" 
-                        shape="circle"
-                        format="hex"
-                        use-type="both"
-                        lang="en"
-                      />
-                    </div>
-                  </template>
-                  <template 
-                    v-else-if="i === 2"
-                    class="relative overflow-hidden transition-all duration-700"
-                  >       
-                    <div class="col-span-12">
-                      <label for="square_type" class="block text-sm font-medium text-gray-700">Corners Square Type</label>
-                      <select id="square_type" v-model="options.cornersSquareOptions.type" name="square_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="">None</option>
-                        <option value="square">Square</option>
-                        <option value="dot">Dot</option>
-                        <option value="extra-rounded">Extra rounded</option>
-                      </select>
-                    </div>
-                    <div 
-                      v-if="activeKeySquare === 'gradient'"
-                      class="col-span-12"
-                    >
-                      <div class="space-y-4">
-                        <div 
-                          v-for="(v, k) in ['linear', 'radial']"
-                          class="flex items-center"
-                          :key="k"
-                        >
-                          <input 
-                            :id="`gradient_square_type_${v}`" 
-                            :name="`gradient_square_type_${v}`" 
-                            type="radio"
-                            :value="v"
-                            v-model="gradientSquareType"
-                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
-                          />
-                          <label 
-                            :for="`gradient_square_type_${v}`" 
-                            class="ml-3 block text-sm font-medium text-gray-700 capitalize"
-                          > 
-                            {{ v }} 
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-span-6">
-                      <label for="square_color" class="block text-sm font-medium text-gray-700">Corners Square Color</label>
-                      <color-picker 
-                        id="square_color"
-                        v-model:pureColor="options.cornersSquareOptions.color" 
-                        v-model:gradientColor="gradientSquare" 
-                        @update:activeKey="handleActiveKeySquare($event)"
-                        picker-type="fk" 
-                        shape="circle"
-                        format="hex"
-                        use-type="both"
-                        lang="en"
-                      />
-                    </div>
-                  </template>
-                  <template 
-                    v-else-if="i === 3"
-                    class="relative overflow-hidden transition-all duration-700"
-                  >       
-                    <div class="col-span-12">
-                      <label for="dot_type" class="block text-sm font-medium text-gray-700">Corners Dot Type</label>
-                      <select id="dot_type" v-model="options.cornersDotOptions.type" name="dot_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="">None</option>
-                        <option value="square">Square</option>
-                        <option value="dot">Dot</option>
-                      </select>
-                    </div>
-                    <div 
-                      v-if="activeKeyDot === 'gradient'"
-                      class="col-span-12"
-                    >
-                      <div class="space-y-4">
-                        <div 
-                          v-for="(v, k) in ['linear', 'radial']"
-                          class="flex items-center"
-                          :key="k"
-                        >
-                          <input 
-                            :id="`gradient_dot_type_${v}`" 
-                            :name="`gradient_dot_type_${v}`" 
-                            type="radio"
-                            :value="v"
-                            v-model="gradientDotType"
-                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
-                          />
-                          <label 
-                            :for="`gradient_dot_type_${v}`" 
-                            class="ml-3 block text-sm font-medium text-gray-700 capitalize"
-                          > 
-                            {{ v }} 
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-span-6">
-                      <label for="dot_color" class="block text-sm font-medium text-gray-700">Corners Dot Color</label>
-                      <color-picker 
-                        id="dot_color"
-                        v-model:pureColor="options.cornersDotOptions.color" 
-                        v-model:gradientColor="gradientDot" 
-                        @update:activeKey="handleActiveKeyDot($event)"
-                        picker-type="fk" 
-                        shape="circle"
-                        format="hex"
-                        use-type="both"
-                        lang="en"
-                      />
-                    </div>
-                  </template>
-                  <template 
-                    v-else-if="i === 4"
-                    class="relative overflow-hidden transition-all duration-700"
-                  >       
-                    <div 
-                      v-if="activeKeyBg === 'gradient'"
-                      class="col-span-12"
-                    >
-                      <div class="space-y-4">
-                        <div 
-                          v-for="(v, k) in ['linear', 'radial']"
-                          class="flex items-center"
-                          :key="k"
-                        >
-                          <input 
-                            :id="`gradient_bg_type_${v}`" 
-                            :name="`gradient_bg_type_${v}`" 
-                            type="radio"
-                            :value="v"
-                            v-model="gradientBgType"
-                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
-                          />
-                          <label 
-                            :for="`gradient_bg_type_${v}`" 
-                            class="ml-3 block text-sm font-medium text-gray-700 capitalize"
-                          > 
-                            {{ v }} 
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-span-6">
-                      <color-picker 
-                        id="bg_color"
-                        v-model:pureColor="options.backgroundOptions.color" 
-                        v-model:gradientColor="gradientBg" 
-                        @update:activeKey="handleActiveKeyBg($event)"
-                        picker-type="fk" 
-                        shape="circle"
-                        format="hex"
-                        use-type="both"
-                        lang="en"
-                      />
-                      <label for="bg_color" class="text-sm font-medium text-gray-700">Color</label>
-                    </div>
-                  </template>
-                </div>
+              <div class="w-full mb-3">
+                <transition name="fade" mode="out-in">
+                  <div id="qr-code" class="text-center mx-auto rounded drop-shadow-md transition-all duration-700" ref="qrCode"></div>
+                </transition>
               </div>
-            </li>
-          </ul>
+              <label class="block text-sm font-medium text-gray-700">
+                <select v-model="extension" class="mt-1 mr-5 mb-3 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  <option value="svg">SVG</option>
+                  <option value="png">PNG</option>
+                  <option value="jpeg">JPEG</option>
+                  <option value="webp">WEBP</option>
+                </select>
+                <button 
+                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  @click="download"
+                >
+                  Download
+                </button>
+              </label>
+            </div>
+            <div 
+              v-else
+              class="text-center overflow-hidden flex items-center"
+            >
+              <div class="w-full">
+                <span class="text-gray-400">Insert data to generate QR code.</span>
+              </div>
+            </div>
+          </transition>
+          <div class="bg-white border border-gray-300 rounded shadow-sm mt-5">
+            <ul>
+              <li 
+                v-for="(v, i) in accordionNames"
+                class="relative border-b border-gray-300"
+                :key="i"
+              >
+                <button 
+                  type="button" 
+                  class="w-full p-5 text-left"
+                  @click="seletedAccordion = seletedAccordion === i ? -1 : i"
+                >
+                  <div class="flex items-center justify-between">
+                    <h4 class="block font-medium text-gray-700">
+                      {{ v }}:
+                    </h4>
+                    <span class="ico-plus"></span>
+                  </div>
+                </button>
+                <div 
+                  :ref="`container_${i}`"
+                  class="relative overflow-hidden transition-all max-h-0 duration-700"     
+                  :style="seletedAccordion === i ? `max-height: ${accordionMaxHeight}px` : ''"                                    
+                >
+                  <div class="grid gap-4 p-5 pt-0">
+                    <template 
+                      v-if="i === 0"
+                      class="relative overflow-hidden transition-all duration-700" 
+                    >   
+                      <div class="col-span-12">
+                        <label class="block text-sm font-medium text-gray-700">
+                          Image
+                        </label>
+                        <div class="flex text-sm text-gray-600 mt-1">
+                          <label 
+                            for="file-upload" 
+                            class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                          >
+                            <span
+                              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                              Upload a file
+                            </span>
+                            <input 
+                              id="file-upload" 
+                              name="file-upload" 
+                              type="file" 
+                              class="sr-only" 
+                              accept="image/png, image/jpg, image/jpeg"
+                              @change="handleUpload"               
+                            />
+                          </label>
+                          <button 
+                            v-if="options.image"
+                            @click="options.image = ''" 
+                            class="ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div> 
+                      <div class="col-span-12">
+                        <label for="hide_bg" class="block text-sm font-medium text-gray-700">Hide Background</label>
+                        <input 
+                          id="hide_bg" 
+                          name="hide_bg"
+                          v-model="options.imageOptions.hideBackgroundDots" 
+                          type="checkbox" 
+                          class="checkbox__input focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" 
+                        />
+                        <label for="hide_bg" class="mt-1 checkbox__inner border-gray-300"></label>
+                      </div>
+                      <div class="col-span-6">
+                        <label for="image_size" class="block text-sm font-medium text-gray-700">Image Size</label>                    
+                        <input 
+                          type="number" 
+                          name="image_size" 
+                          v-model="options.imageOptions.imageSize"
+                          id="image_size" 
+                          autocomplete="off" 
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                        />
+                      </div>
+                      <div class="col-span-6">
+                        <label for="image_margin" class="block text-sm font-medium text-gray-700">Image Margin</label>
+                        <input 
+                          type="number" 
+                          name="image_margin" 
+                          v-model="options.imageOptions.margin"
+                          id="image_margin" 
+                          autocomplete="off" 
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                        />
+                      </div>   
+                      <div class="col-span-6">
+                        <label for="size" class="block text-sm font-medium text-gray-700">Size</label>
+                        <input 
+                          type="number" 
+                          name="size" 
+                          v-model="size"
+                          id="size" 
+                          autocomplete="off" 
+                          min="300"
+                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                        />
+                      </div>
+                      <div class="col-span-6">
+                        <label for="margin" class="block text-sm font-medium text-gray-700">Margin</label>
+                        <input 
+                          type="number" 
+                          name="margin" 
+                          v-model="options.margin"
+                          id="margin" 
+                          autocomplete="off" 
+                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                        />
+                      </div>
+                      <div class="col-span-12">
+                        <label for="errorCorrectionLevel" class="block text-sm font-medium text-gray-700">Error Correction Level</label>
+                        <select 
+                          id="errorCorrectionLevel" 
+                          v-model="options.qrOptions.errorCorrectionLevel" 
+                          name="square_type" 
+                          class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        >
+                          <option value="L">L</option>
+                          <option value="M">M</option>
+                          <option value="Q">Q</option>
+                          <option value="H">H</option>
+                        </select>
+                      </div>
+                    </template>
+                    <template 
+                      v-else-if="i === 1"
+                      class="relative overflow-hidden transition-all duration-700"
+                    >       
+                      <div class="col-span-12">
+                        <label for="dots_type" class="block text-sm font-medium text-gray-700">Dots Type</label>
+                        <select id="dots_type" v-model="options.dotsOptions.type" name="dots_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                          <option value="square">Square</option>
+                          <option value="dots">Dots</option>
+                          <option value="rounded">Rounded</option>
+                          <option value="extra-rounded">Extra rounded</option>
+                          <option value="classy">Classy</option>
+                          <option value="classy-rounded">Classy rounded</option>
+                        </select>
+                      </div>
+                      <div 
+                        v-if="activeKey === 'gradient'"
+                        class="col-span-12"
+                      >
+                        <div class="space-y-4">
+                          <div 
+                            v-for="(v, k) in ['linear', 'radial']"
+                            class="flex items-center"
+                            :key="k"
+                          >
+                            <input 
+                              :id="`gradient_type_${v}`" 
+                              :name="`gradient_type_${v}`" 
+                              type="radio"
+                              :value="v"
+                              v-model="gradientType"
+                              class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
+                            />
+                            <label 
+                              :for="`gradient_type_${v}`" 
+                              class="ml-3 block text-sm font-medium text-gray-700 capitalize"
+                            > 
+                              {{ v }} 
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-span-6">
+                        <label for="dots_color" class="block text-sm font-medium text-gray-700">Dots Color</label>
+                        <color-picker 
+                          id="dots_color"
+                          v-model:pureColor="options.dotsOptions.color" 
+                          v-model:gradientColor="gradient" 
+                          @update:activeKey="handleActiveKey($event)"
+                          picker-type="fk" 
+                          shape="circle"
+                          format="hex"
+                          use-type="both"
+                          lang="en"
+                        />
+                      </div>
+                    </template>
+                    <template 
+                      v-else-if="i === 2"
+                      class="relative overflow-hidden transition-all duration-700"
+                    >       
+                      <div class="col-span-12">
+                        <label for="square_type" class="block text-sm font-medium text-gray-700">Corners Square Type</label>
+                        <select id="square_type" v-model="options.cornersSquareOptions.type" name="square_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                          <option value="">None</option>
+                          <option value="square">Square</option>
+                          <option value="dot">Dot</option>
+                          <option value="extra-rounded">Extra rounded</option>
+                        </select>
+                      </div>
+                      <div 
+                        v-if="activeKeySquare === 'gradient'"
+                        class="col-span-12"
+                      >
+                        <div class="space-y-4">
+                          <div 
+                            v-for="(v, k) in ['linear', 'radial']"
+                            class="flex items-center"
+                            :key="k"
+                          >
+                            <input 
+                              :id="`gradient_square_type_${v}`" 
+                              :name="`gradient_square_type_${v}`" 
+                              type="radio"
+                              :value="v"
+                              v-model="gradientSquareType"
+                              class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
+                            />
+                            <label 
+                              :for="`gradient_square_type_${v}`" 
+                              class="ml-3 block text-sm font-medium text-gray-700 capitalize"
+                            > 
+                              {{ v }} 
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-span-6">
+                        <label for="square_color" class="block text-sm font-medium text-gray-700">Corners Square Color</label>
+                        <color-picker 
+                          id="square_color"
+                          v-model:pureColor="options.cornersSquareOptions.color" 
+                          v-model:gradientColor="gradientSquare" 
+                          @update:activeKey="handleActiveKeySquare($event)"
+                          picker-type="fk" 
+                          shape="circle"
+                          format="hex"
+                          use-type="both"
+                          lang="en"
+                        />
+                      </div>
+                    </template>
+                    <template 
+                      v-else-if="i === 3"
+                      class="relative overflow-hidden transition-all duration-700"
+                    >       
+                      <div class="col-span-12">
+                        <label for="dot_type" class="block text-sm font-medium text-gray-700">Corners Dot Type</label>
+                        <select id="dot_type" v-model="options.cornersDotOptions.type" name="dot_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                          <option value="">None</option>
+                          <option value="square">Square</option>
+                          <option value="dot">Dot</option>
+                        </select>
+                      </div>
+                      <div 
+                        v-if="activeKeyDot === 'gradient'"
+                        class="col-span-12"
+                      >
+                        <div class="space-y-4">
+                          <div 
+                            v-for="(v, k) in ['linear', 'radial']"
+                            class="flex items-center"
+                            :key="k"
+                          >
+                            <input 
+                              :id="`gradient_dot_type_${v}`" 
+                              :name="`gradient_dot_type_${v}`" 
+                              type="radio"
+                              :value="v"
+                              v-model="gradientDotType"
+                              class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
+                            />
+                            <label 
+                              :for="`gradient_dot_type_${v}`" 
+                              class="ml-3 block text-sm font-medium text-gray-700 capitalize"
+                            > 
+                              {{ v }} 
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-span-6">
+                        <label for="dot_color" class="block text-sm font-medium text-gray-700">Corners Dot Color</label>
+                        <color-picker 
+                          id="dot_color"
+                          v-model:pureColor="options.cornersDotOptions.color" 
+                          v-model:gradientColor="gradientDot" 
+                          @update:activeKey="handleActiveKeyDot($event)"
+                          picker-type="fk" 
+                          shape="circle"
+                          format="hex"
+                          use-type="both"
+                          lang="en"
+                        />
+                      </div>
+                    </template>
+                    <template 
+                      v-else-if="i === 4"
+                      class="relative overflow-hidden transition-all duration-700"
+                    >       
+                      <div 
+                        v-if="activeKeyBg === 'gradient'"
+                        class="col-span-12"
+                      >
+                        <div class="space-y-4">
+                          <div 
+                            v-for="(v, k) in ['linear', 'radial']"
+                            class="flex items-center"
+                            :key="k"
+                          >
+                            <input 
+                              :id="`gradient_bg_type_${v}`" 
+                              :name="`gradient_bg_type_${v}`" 
+                              type="radio"
+                              :value="v"
+                              v-model="gradientBgType"
+                              class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
+                            />
+                            <label 
+                              :for="`gradient_bg_type_${v}`" 
+                              class="ml-3 block text-sm font-medium text-gray-700 capitalize"
+                            > 
+                              {{ v }} 
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-span-6">
+                        <color-picker 
+                          id="bg_color"
+                          v-model:pureColor="options.backgroundOptions.color" 
+                          v-model:gradientColor="gradientBg" 
+                          @update:activeKey="handleActiveKeyBg($event)"
+                          picker-type="fk" 
+                          shape="circle"
+                          format="hex"
+                          use-type="both"
+                          lang="en"
+                        />
+                        <label for="bg_color" class="text-sm font-medium text-gray-700">Color</label>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <div class="md:w-1/3 text-center overflow-hidden p-10">
-        <div class="w-full mb-3">
-          <div id="qr-code" class="text-center mx-auto rounded drop-shadow-md" ref="qrCode"></div>
-        </div>
-        <label class="block text-sm font-medium text-gray-700">
-          <select v-model="extension" class="mt-1 mr-5 mb-3 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            <option value="svg">SVG</option>
-            <option value="png">PNG</option>
-            <option value="jpeg">JPEG</option>
-            <option value="webp">WEBP</option>
-          </select>
-          <button 
-            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            @click="download"
-          >
-            Download
-          </button>
-        </label>
       </div>
     </div>
   </div>

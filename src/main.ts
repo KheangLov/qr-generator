@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 // import { registerSW } from 'virtual:pwa-register'
 import Vue3ColorPicker from "vue3-colorpicker"
+import LitepieDatepicker from 'litepie-datepicker'
 import "vue3-colorpicker/style.css"
 import './assets/style.css'
 // const intervalMS = 60 * 60 * 1000
@@ -17,4 +18,5 @@ import './assets/style.css'
 const app = createApp(App)
 // app.use(updateSW)
 app.use(Vue3ColorPicker)
+app.use(LitepieDatepicker)
 app.mount('#app')
