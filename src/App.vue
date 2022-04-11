@@ -7,6 +7,34 @@
 #qr-code canvas {
   max-width: 300px !important;
   width: 100% !important;
+  border-radius: 0.25rem !important;
+}
+
+.checkbox {
+  position: relative;
+  overflow: hidden;
+}
+
+.checkbox__input {
+  position: absolute;
+  top: -100px;
+  left: -100px;
+}
+ 
+.checkbox__inner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #626262;
+  background: transparent no-repeat center;
+}
+
+.checkbox__input:checked + .checkbox__inner {
+  border-color: #52C6C4;
+  background-color: #52C6C4;
+  background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='14px' height='10px' viewBox='0 0 14 10' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 59.1 (86144) - https://sketch.com --%3E%3Ctitle%3Echeck%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg id='ios_modification' transform='translate(-27.000000, -191.000000)' fill='%23FFFFFF' fill-rule='nonzero'%3E%3Cg id='Group-Copy' transform='translate(0.000000, 164.000000)'%3E%3Cg id='ic-check-18px' transform='translate(25.000000, 23.000000)'%3E%3Cpolygon id='check' points='6.61 11.89 3.5 8.78 2.44 9.84 6.61 14 15.56 5.05 14.5 4'%3E%3C/polygon%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-size: 14px 10px;
 }
 </style>
 
@@ -38,12 +66,78 @@ export default defineComponent({
       this.options.width = val
       this.options.height = val
     },
+    activeKeyBg(val) {
+      if (val === 'gradient') {
+        this.options.backgroundOptions.gradient = {
+          type: 'linear',
+          rotation: parseInt(this.gradientBgArray[0]),
+          colorStops: this.gradientBgArray.slice(1, 3).map((v, i) => ({
+            offset: i,
+            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+          })),
+        }        
+        setTimeout(() => this.accordionMaxHeight = this.$refs['container_4'][0].firstChild.offsetHeight, 500)
+      } else {
+        this.options.backgroundOptions.gradient = false
+      }
+    },    
+    gradientBgType(val) {
+      if (this.options.backgroundOptions.gradient) {
+        this.options.backgroundOptions.gradient.type = val
+      }
+    },
+    gradientBg(val) {    
+      this.gradientBgArray = this.splitLinear(val)
+      if (this.activeKeyBg === 'gradient') {          
+        this.options.backgroundOptions.gradient = {
+          type: this.gradientBgType,
+          rotation: parseInt(this.gradientBgArray[0]),
+          colorStops: this.gradientBgArray.slice(1, 3).map((v, i) => ({
+            offset: i,
+            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+          })),
+        }
+      }
+    },
+    activeKeyDot(val) {
+      if (val === 'gradient') {
+        this.options.cornersDotOptions.gradient = {
+          type: 'linear',
+          rotation: parseInt(this.gradientDotArray[0]),
+          colorStops: this.gradientDotArray.slice(1, 3).map((v, i) => ({
+            offset: i,
+            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+          })),
+        }        
+        setTimeout(() => this.accordionMaxHeight = this.$refs['container_3'][0].firstChild.offsetHeight, 500)
+      } else {
+        this.options.cornersDotOptions.gradient = false
+      }
+    },    
+    gradientDotType(val) {
+      if (this.options.cornersDotOptions.gradient) {
+        this.options.cornersDotOptions.gradient.type = val
+      }
+    },
+    gradientDot(val) {    
+      this.gradientDotArray = this.splitLinear(val)
+      if (this.activeKeyDot === 'gradient') {          
+        this.options.cornersDotOptions.gradient = {
+          type: this.gradientDotType,
+          rotation: parseInt(this.gradientDotArray[0]),
+          colorStops: this.gradientDotArray.slice(1, 3).map((v, i) => ({
+            offset: i,
+            color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
+          })),
+        }
+      }
+    },
     activeKeySquare(val) {
       if (val === 'gradient') {
         this.options.cornersSquareOptions.gradient = {
           type: 'linear',
-          rotation: parseInt(this.gradientArray[0]),
-          colorStops: this.gradientArray.slice(1, 3).map((v, i) => ({
+          rotation: parseInt(this.gradientSquareArray[0]),
+          colorStops: this.gradientSquareArray.slice(1, 3).map((v, i) => ({
             offset: i,
             color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
           })),
@@ -81,7 +175,7 @@ export default defineComponent({
             color: this.rgbaToHex(v.match(/\d+/g).slice(0, 3))
           })),
         }        
-        setTimeout(() => this.accordionMaxHeight = this.$refs['container_1'][0].firstChild.offsetHeight, 500)
+        setTimeout(() => this.accordionMaxHeight = this.$refs['container_1'][0].firstChild.offsetHeight, 100)
       } else {
         this.options.dotsOptions.gradient = false
       }
@@ -106,6 +200,12 @@ export default defineComponent({
     },
     options: {
       handler() {     
+        if (this.options.imageOptions.imageSize > 1) {
+          this.options.imageOptions.imageSize = 1
+        } else if (this.options.imageOptions.imageSize < 0) {
+          this.options.imageOptions.imageSize = 0
+        }
+
         if (this.options.width >= 300 && this.options.height >= 300) {
           this.qrCode.update(this.options)
         }        
@@ -134,6 +234,12 @@ export default defineComponent({
     },
     handleActiveKeySquare(val: string) {
       this.activeKeySquare = val
+    },
+    handleActiveKeyDot(val: string) {
+      this.activeKeyDot = val
+    },
+    handleActiveKeyBg(val: string) {
+      this.activeKeyBg = val
     },
     rgbaToHex(rgbs: Array<string>) {
       if (rgbs && rgbs.length === 3) {
@@ -194,41 +300,34 @@ export default defineComponent({
       },
       backgroundOptions: {
         color: '#ffffff',
-        // gradient: {
-        //   type: 'linear', // 'radial'
-        //   rotation: 0,
-        //   colorStops: [{ offset: 0, color: '#ededff' }, { offset: 1, color: '#e6e7ff' }]
-        // },
       },
       cornersSquareOptions: {
         color: '#35495E',
         type: 'extra-rounded' as CornerSquareType,
-        // gradient: {
-        //   type: 'linear', // 'radial'
-        //   rotation: 180,
-        //   colorStops: [{ offset: 0, color: '#25456e' }, { offset: 1, color: '#4267b2' }]
-        // },
       },
       cornersDotOptions: {
         color: '#35495E',
         type: 'dot' as CornerDotType,
-        // gradient: {
-        //   type: 'linear', // 'radial'
-        //   rotation: 180,
-        //   colorStops: [{ offset: 0, color: '#00266e' }, { offset: 1, color: '#4060b3' }]
-        // },
       }
     }
     
     return {
-      activeKey: 'pure',
-      activeKeySquare: 'pure',
+      activeKey: 'pure',      
       gradient: '',
       gradientArray: [] as Array<string>,
       gradientType: 'linear',
+      activeKeySquare: 'pure',
       gradientSquare: '',
       gradientSquareArray: [] as Array<string>,
       gradientSquareType: 'linear',
+      activeKeyDot: 'pure',
+      gradientDot: '',
+      gradientDotArray: [] as Array<string>,
+      gradientDotType: 'linear',
+      activeKeyBg: 'pure',
+      gradientBg: '',
+      gradientBgArray: [] as Array<string>,
+      gradientBgType: 'linear',
       size,
       passwordType: 'password',
       disableButton: true,
@@ -247,6 +346,7 @@ export default defineComponent({
         'Dots Options',
         'Corners Square Options',
         'Corners Dot Options',
+        'Background Options',
       ],
     }
   }
@@ -255,8 +355,8 @@ export default defineComponent({
 
 <template>
   <Navbar />
-  <div class="sm:container sm:mx-auto sm:py-10 mx-5 py-5">
-    <div class="w-full drop-shadow-lg bg-white overflow-hidden rounded md:flex">
+  <div class="sm:container sm:mx-auto sm:py-10">
+    <div class="w-full drop-shadow-lg bg-white overflow-hidden sm:rounded md:flex">
       <div class="md:w-1/3 text-left p-10">
         <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
           QR Data
@@ -302,7 +402,7 @@ export default defineComponent({
           </div>
         </div>
         <div class="py-6 text-right">
-          <button :disabled="disableButton" @click="generateQr" type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button :disabled="disableButton" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             Generate
           </button>
         </div>
@@ -325,7 +425,7 @@ export default defineComponent({
               >
                 <div class="flex items-center justify-between">
                   <h4 class="block font-medium text-gray-700">
-                    {{ v }}
+                    {{ v }}:
                   </h4>
                   <span class="ico-plus"></span>
                 </div>
@@ -363,8 +463,54 @@ export default defineComponent({
                             @change="handleUpload"               
                           />
                         </label>
+                        <button 
+                          v-if="options.image"
+                          @click="options.image = ''" 
+                          class="ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                          Clear
+                        </button>
                       </div>
-                    </div>    
+                    </div> 
+                    <div class="col-span-12">
+                      <label for="hide_bg" class="block text-sm font-medium text-gray-700">Hide Background</label>
+                      <input 
+                        id="hide_bg" 
+                        name="hide_bg"
+                        v-model="options.imageOptions.hideBackgroundDots" 
+                        type="checkbox" 
+                        class="checkbox__input focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" 
+                      />
+                      <label for="hide_bg" class="mt-1 checkbox__inner border-gray-300"></label>
+                    </div>
+                    <div class="col-span-6">
+                      <label for="image_size" class="block text-sm font-medium text-gray-700">Image Size</label>                    
+                      <input 
+                        type="number" 
+                        name="image_size" 
+                        v-model="options.imageOptions.imageSize"
+                        id="image_size" 
+                        autocomplete="off" 
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                      />
+                    </div>
+                    <div class="col-span-6">
+                      <label for="image_margin" class="block text-sm font-medium text-gray-700">Image Margin</label>
+                      <input 
+                        type="number" 
+                        name="image_margin" 
+                        v-model="options.imageOptions.margin"
+                        id="image_margin" 
+                        autocomplete="off" 
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                      />
+                    </div>   
                     <div class="col-span-6">
                       <label for="size" class="block text-sm font-medium text-gray-700">Size</label>
                       <input 
@@ -387,6 +533,20 @@ export default defineComponent({
                         autocomplete="off" 
                         class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
                       />
+                    </div>
+                    <div class="col-span-12">
+                      <label for="errorCorrectionLevel" class="block text-sm font-medium text-gray-700">Error Correction Level</label>
+                      <select 
+                        id="errorCorrectionLevel" 
+                        v-model="options.qrOptions.errorCorrectionLevel" 
+                        name="square_type" 
+                        class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="L">L</option>
+                        <option value="M">M</option>
+                        <option value="Q">Q</option>
+                        <option value="H">H</option>
+                      </select>
                     </div>
                   </template>
                   <template 
@@ -423,7 +583,7 @@ export default defineComponent({
                             class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
                           />
                           <label 
-                            for="gradient_type" 
+                            :for="`gradient_type_${v}`" 
                             class="ml-3 block text-sm font-medium text-gray-700 capitalize"
                           > 
                             {{ v }} 
@@ -478,7 +638,7 @@ export default defineComponent({
                             class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
                           />
                           <label 
-                            for="gradient_type" 
+                            :for="`gradient_square_type_${v}`" 
                             class="ml-3 block text-sm font-medium text-gray-700 capitalize"
                           > 
                             {{ v }} 
@@ -501,6 +661,106 @@ export default defineComponent({
                       />
                     </div>
                   </template>
+                  <template 
+                    v-else-if="i === 3"
+                    class="relative overflow-hidden transition-all duration-700"
+                  >       
+                    <div class="col-span-12">
+                      <label for="dot_type" class="block text-sm font-medium text-gray-700">Corners Dot Type</label>
+                      <select id="dot_type" v-model="options.cornersDotOptions.type" name="dot_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="">None</option>
+                        <option value="square">Square</option>
+                        <option value="dot">Dot</option>
+                      </select>
+                    </div>
+                    <div 
+                      v-if="activeKeyDot === 'gradient'"
+                      class="col-span-12"
+                    >
+                      <div class="space-y-4">
+                        <div 
+                          v-for="(v, k) in ['linear', 'radial']"
+                          class="flex items-center"
+                          :key="k"
+                        >
+                          <input 
+                            :id="`gradient_dot_type_${v}`" 
+                            :name="`gradient_dot_type_${v}`" 
+                            type="radio"
+                            :value="v"
+                            v-model="gradientDotType"
+                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
+                          />
+                          <label 
+                            :for="`gradient_dot_type_${v}`" 
+                            class="ml-3 block text-sm font-medium text-gray-700 capitalize"
+                          > 
+                            {{ v }} 
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-span-6">
+                      <label for="dot_color" class="block text-sm font-medium text-gray-700">Corners Dot Color</label>
+                      <color-picker 
+                        id="dot_color"
+                        v-model:pureColor="options.cornersDotOptions.color" 
+                        v-model:gradientColor="gradientDot" 
+                        @update:activeKey="handleActiveKeyDot($event)"
+                        picker-type="fk" 
+                        shape="circle"
+                        format="hex"
+                        use-type="both"
+                        lang="en"
+                      />
+                    </div>
+                  </template>
+                  <template 
+                    v-else-if="i === 4"
+                    class="relative overflow-hidden transition-all duration-700"
+                  >       
+                    <div 
+                      v-if="activeKeyBg === 'gradient'"
+                      class="col-span-12"
+                    >
+                      <div class="space-y-4">
+                        <div 
+                          v-for="(v, k) in ['linear', 'radial']"
+                          class="flex items-center"
+                          :key="k"
+                        >
+                          <input 
+                            :id="`gradient_bg_type_${v}`" 
+                            :name="`gradient_bg_type_${v}`" 
+                            type="radio"
+                            :value="v"
+                            v-model="gradientBgType"
+                            class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" 
+                          />
+                          <label 
+                            :for="`gradient_bg_type_${v}`" 
+                            class="ml-3 block text-sm font-medium text-gray-700 capitalize"
+                          > 
+                            {{ v }} 
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-span-6">
+                      <color-picker 
+                        id="bg_color"
+                        v-model:pureColor="options.backgroundOptions.color" 
+                        v-model:gradientColor="gradientBg" 
+                        @update:activeKey="handleActiveKeyBg($event)"
+                        picker-type="fk" 
+                        shape="circle"
+                        format="hex"
+                        use-type="both"
+                        lang="en"
+                      />
+                      <label for="bg_color" class="text-sm font-medium text-gray-700">Color</label>
+                    </div>
+                  </template>
                 </div>
               </div>
             </li>
@@ -509,7 +769,7 @@ export default defineComponent({
       </div>
       <div class="md:w-1/3 text-center overflow-hidden p-10">
         <div class="w-full mb-3">
-          <div id="qr-code" class="text-center mx-auto" ref="qrCode"></div>
+          <div id="qr-code" class="text-center mx-auto rounded drop-shadow-md" ref="qrCode"></div>
         </div>
         <label class="block text-sm font-medium text-gray-700">
           <select v-model="extension" class="mt-1 mr-5 mb-3 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -536,6 +796,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
-  background: #e5e5e5;
+  background: #f0f3f4;
 }
 </style>
