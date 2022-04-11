@@ -46,8 +46,7 @@ import QRCodeStyling, {
   ErrorCorrectionLevel,
   DotType,
   CornerSquareType,
-  CornerDotType,
-  Extension
+  CornerDotType
 } from 'qr-code-styling'
 import Navbar from './components/Navbar.vue'
 
@@ -255,7 +254,7 @@ export default defineComponent({
       this.disableButton = true
     },
     download() {
-      this.qrCode.download({ extension: this.extension as Extension })
+      this.qrCode.download({ extension: this.extension })
     },
     passwordVisible() {
       if (this.passwordType === 'password') {
