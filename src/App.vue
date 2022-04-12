@@ -711,7 +711,7 @@ export default defineComponent({
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only"
-                                      :capture="captureOptions.value" 
+                                      :capture="captureSelected.value" 
                                       @decode="onDecode" 
                                     />
                                   </label>    
