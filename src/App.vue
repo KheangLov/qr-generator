@@ -719,7 +719,7 @@ export default defineComponent({
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only" 
-                                      capture="false" 
+                                      capture="user" 
                                       @decode="onDecode" 
                                       @detect="onDetect"
                                     />
