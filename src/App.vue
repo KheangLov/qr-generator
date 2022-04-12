@@ -635,6 +635,7 @@ export default defineComponent({
                               </p>                                                                  
 
                               <div 
+                                class="relative"
                                 :class="{ 'fullscreen': fullscreen }" 
                                 ref="wrapper" 
                                 @fullscreenchange="onFullscreenChange"
@@ -657,14 +658,14 @@ export default defineComponent({
                                   </button>
                                   <button 
                                     v-if="!noCamera && !noReadableCamera"
-                                    class="absolute w-12 h-12 m-3 py-2 px-3 bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"                                  
+                                    class="absolute left-0 w-12 h-12 m-3 py-2 px-3 bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"                                  
                                     @click="switchCamera"
                                   >
                                     <SwitchHorizontalIcon />
                                   </button>
                                   <button 
                                     @click="fullscreen = !fullscreen"
-                                    class="absolute bottom-0 w-12 h-12 m-3 py-2 px-3 bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"                                   
+                                    class="absolute bottom-0 left-0 w-12 h-12 m-3 py-2 px-3 bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"                                   
                                   >
                                     <ExternalLinkIcon />
                                   </button>
