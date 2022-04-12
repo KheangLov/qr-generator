@@ -1,4 +1,21 @@
 <style>
+body {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+  background: #f0f3f4;
+}
+
+.fullscreen {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+
 #qr-code {
   max-width: 300px !important;
   max-height: 300px !important;
@@ -7,7 +24,7 @@
 #qr-code canvas {
   max-width: 300px !important;
   width: 100% !important;
-  border-radius: 0.25rem !important;
+  border-radius: 0.5rem !important;
 }
 
 .checkbox {
@@ -36,6 +53,7 @@
   background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='14px' height='10px' viewBox='0 0 14 10' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 59.1 (86144) - https://sketch.com --%3E%3Ctitle%3Echeck%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg id='ios_modification' transform='translate(-27.000000, -191.000000)' fill='%23FFFFFF' fill-rule='nonzero'%3E%3Cg id='Group-Copy' transform='translate(0.000000, 164.000000)'%3E%3Cg id='ic-check-18px' transform='translate(25.000000, 23.000000)'%3E%3Cpolygon id='check' points='6.61 11.89 3.5 8.78 2.44 9.84 6.61 14 15.56 5.05 14.5 4'%3E%3C/polygon%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   background-size: 14px 10px;
 }
+
 </style>
 
 <script lang="ts">
@@ -51,11 +69,41 @@ import QRCodeStyling, {
   Gradient,
   GradientType
 } from 'qr-code-styling'
+import { CameraIcon, LightningBoltIcon, SwitchHorizontalIcon, ExternalLinkIcon } from "@heroicons/vue/outline"
+import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import Navbar from './components/Navbar.vue'
+
+interface Vcard {
+  firstname: string,
+  lastname: string,
+  bd: Array<string>|string,
+  gender: string,
+  address: string,
+  city: string,
+  postal: string,
+  region: string,
+  country: string,
+  tel: string,
+  email: string,
+  web: string,
+  job: string,
+  company: string,
+}
+
+declare type CameraType = 'auto' | 'rear' | 'front'
 
 export default defineComponent({
   components: {
-    Navbar
+    Navbar,
+    CameraIcon,
+    LightningBoltIcon,
+    SwitchHorizontalIcon,
+    ExternalLinkIcon,
+    Dialog,
+    DialogOverlay,
+    DialogTitle,
+    TransitionChild,
+    TransitionRoot,
   },
   mounted() {
     this.loadQR()
@@ -247,9 +295,58 @@ export default defineComponent({
       } else {
         this.accordionMaxHeight = 0
       }
-    }
+    },
+    fullscreen(enterFullscreen) {
+      if (enterFullscreen) {
+        this.requestFullscreen()
+      } else {
+        this.exitFullscreen()
+      }
+    },
   },
   methods: {
+    onFullscreenChange() {
+      this.fullscreen = document.fullscreenElement !== null
+    },
+    requestFullscreen() {
+      const elem = this.$refs.wrapper as HTMLElement
+
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen()
+        // @ts-ignore
+      } else if (elem.mozRequestFullScreen) { /* Firefox */
+        // @ts-ignore
+        elem.mozRequestFullScreen()
+        // @ts-ignore
+      } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        // @ts-ignore
+        elem.webkitRequestFullscreen()
+        // @ts-ignore
+      } else if (elem.msRequestFullscreen) { /* IE/Edge */
+        // @ts-ignore
+        elem.msRequestFullscreen()
+      }
+    },
+    exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+        // @ts-ignore
+      } else if (document.mozCancelFullScreen) { /* Firefox */
+        // @ts-ignore
+        document.mozCancelFullScreen()
+        // @ts-ignore
+      } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+        // @ts-ignore
+        document.webkitExitFullscreen()
+        // @ts-ignore
+      } else if (document.msExitFullscreen) { /* IE/Edge */
+        // @ts-ignore
+        document.msExitFullscreen()
+      }
+    },
+    onToggle() {
+      this.isOpen = !this.isOpen
+    },
     loadQR() {
       const qrEle = this.$refs.qrCode as HTMLElement
       this.qrCode.append(qrEle)
@@ -321,6 +418,51 @@ export default defineComponent({
         console.log('Error: ', error)
       }
     },
+    async onInit(promise: Promise<any>) {
+      try {
+        const { capabilities } = await promise
+        console.log(capabilities)
+        this.torchNotSupported = !capabilities.torch
+        this.qrLoaded = true
+      } catch (error: any) {
+        const triedFrontCamera = this.camera === 'front'
+        const triedRearCamera = this.camera === 'rear'
+
+        if (error.name === 'OverconstrainedError') {
+          if (triedRearCamera) {
+            this.noRearCamera = true
+          } else if (triedFrontCamera) {
+            this.noFrontCamera = true
+          }
+        } else if (error.name === 'NotAllowedError') {
+          this.noPermissionCamera = true
+        } else if (error.name === 'NotFoundError') {
+          this.noCamera = true
+        } else if (error.name === 'NotSupportedError') {
+          this.noServedCamera = true
+        } else if (error.name === 'NotReadableError') {
+          this.noReadableCamera = true
+        } else if (error.name === 'StreamApiNotSupportedError') {
+          this.lackingFeature = true
+        }
+
+        console.error(error)
+      }
+    },
+    onDecode(data: any) {
+      console.log(data)
+    },
+    switchCamera() {
+      if (this.noRearCamera && this.noFrontCamera) {
+        this.camera = 'auto'
+        this.noRearCamera = false
+        this.noFrontCamera = false
+      } else if (this.camera === 'rear') {
+        this.camera = 'front'
+      } else {
+        this.camera = 'rear'
+      }
+    },
   },
   data() {
     const size = 300
@@ -389,7 +531,7 @@ export default defineComponent({
       },
       options,
       extension: 'svg',
-      qrCode: new QRCodeStyling(options),
+      qrCode: new QRCodeStyling(options) as QRCodeStyling,
       seletedAccordion: -1,
       accordionMaxHeight: 0,
       accordionNames: [
@@ -421,7 +563,20 @@ export default defineComponent({
         web: '',
         job: '',
         company: '',
-      },
+      } as Vcard,
+      isOpen: false as boolean,
+      torchActive: false as boolean,
+      torchNotSupported: false as boolean,
+      qrLoaded: false as boolean,
+      camera: 'auto' as CameraType,
+      noCamera: false as boolean,
+      noRearCamera: false as boolean,
+      noFrontCamera: false as boolean,
+      noReadableCamera: false as boolean,
+      noPermissionCamera: false as boolean,
+      noServedCamera: false as boolean,
+      lackingFeature: false as boolean,
+      fullscreen: false as boolean,
     }
   }
 })
@@ -432,10 +587,126 @@ export default defineComponent({
   <div class="container mx-auto sm:py-10">
     <div class="w-full gap-10 md:flex">
       <div class="w-full md:w-3/5">
-        <div class="text-left p-10 drop-shadow-lg bg-white sm:rounded">
-          <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
-            QR Data
-          </h2>
+        <div class="text-left p-10 sm:drop-shadow-lg bg-white sm:rounded-lg">
+          <div class="flex justify-between">
+            <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
+              QR Data              
+            </h2>
+            <button @click="onToggle" type="button" class="bg-trasparent">
+              <CameraIcon class="h-5 w-5 text-gray-700" />
+            </button> 
+            <teleport to="body">
+              <TransitionRoot as="template" :show="isOpen">
+                <Dialog as="div" class="fixed z-10 inset-0 overflow-y-auto" @close="onToggle">
+                  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+                      <DialogOverlay class="fixed inset-0 bg-gray-800 bg-opacity-75 transition-opacity" />
+                    </TransitionChild>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200" leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                      <div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                          <div class="mt-3 text-center sm:mt-0 sm:text-left">
+                            <DialogTitle as="h3" class="text-lg leading-6 font-medium text-gray-900 uppercase tracking-wider"> Scan QR-Code </DialogTitle>
+                            <div class="mt-2">
+                              <p v-if="torchNotSupported" class="text-red-500 mb-2">
+                                Torch not supported for active camera!
+                              </p>        
+                              <p class="text-red-500 mb-2" v-if="noFrontCamera">
+                                You don't seem to have a front camera on your device!
+                              </p>
+                              <p class="text-red-500 mb-2" v-if="noRearCamera">
+                                You don't seem to have a rear camera on your device!
+                              </p>     
+                              <p class="text-red-500 mb-2" v-if="noCamera">
+                                There's seem to be no camera on your device!
+                              </p>     
+                              <p class="text-red-500 mb-2" v-if="noReadableCamera">
+                                There's seem to be camera not readable on your device!
+                              </p>       
+                              <p class="text-red-500 mb-2" v-if="noPermissionCamera">
+                                There's seem to be no permission to access on your device camera!
+                              </p>   
+                              <p class="text-red-500 mb-2" v-if="noServedCamera">
+                                Can't access to the camera from current host!
+                              </p>  
+                              <p class="text-red-500 mb-2" v-if="lackingFeature">
+                                Your browser is lacking feature!
+                              </p>                                                                  
+
+                              <div 
+                                :class="{ 'fullscreen': fullscreen }" 
+                                ref="wrapper" 
+                                @fullscreenchange="onFullscreenChange"
+                              >
+                                <qr-stream 
+                                  class="mb"
+                                  @decode="onDecode" 
+                                  :torch="torchActive" 
+                                  :camera="camera"
+                                  @init="onInit"                                
+                                >
+                                  <button           
+                                    v-if="!torchNotSupported"                        
+                                    class="absolute bottom-0 right-0 w-12 h-12 m-3 py-2 px-3 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"
+                                    :class="!torchActive ? 'bg-gray-400' : 'bg-indigo-500'"
+                                    @click="torchActive = !torchActive" 
+                                    :disabled="torchNotSupported"
+                                  >
+                                    <LightningBoltIcon />
+                                  </button>
+                                  <button 
+                                    v-if="!noCamera && !noReadableCamera"
+                                    class="absolute w-12 h-12 m-3 py-2 px-3 bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"                                  
+                                    @click="switchCamera"
+                                  >
+                                    <SwitchHorizontalIcon />
+                                  </button>
+                                  <button 
+                                    @click="fullscreen = !fullscreen"
+                                    class="absolute bottom-0 w-12 h-12 m-3 py-2 px-3 bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"                                   
+                                  >
+                                    <ExternalLinkIcon />
+                                  </button>
+                                  <label 
+                                    v-if="qrLoaded"
+                                    for="qr-capture-upload" 
+                                    class="absolute right-0 m-3 cursor-pointer bg-transparent rounded-lg font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                                  >
+                                    <span
+                                      class="inline-flex w-12 h-12 justify-center py-2 px-3 border border-transparent shadow text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    >
+                                      <CameraIcon />
+                                    </span>
+                                    <qr-capture
+                                      id="qr-capture-upload" 
+                                      name="qr-capture-upload"  
+                                      class="mb-2 sr-only" 
+                                      @decode="onDecode" 
+                                    />
+                                  </label>    
+                                </qr-stream>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                          <button 
+                            type="button" 
+                            class="mt-3 w-full inline-flex justify-center rounded-lg border border-red-600 shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" 
+                            @click="onToggle" 
+                            ref="cancelButtonRef"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </TransitionChild>
+                  </div>
+                </Dialog>
+              </TransitionRoot>
+            </teleport>
+          </div>
           <div class="flex flex-nowrap mb-5">
             <div v-for="(v, i) in buttonTabs" :key="i">
               <button 
@@ -456,7 +727,7 @@ export default defineComponent({
                   v-model="form.ssid"
                   id="ssid" 
                   autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                 />
               </div>
               <div class="relative">
@@ -467,7 +738,7 @@ export default defineComponent({
                   v-model="form.password"
                   id="password" 
                   autocomplete="off" 
-                  class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                  class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                 />                    
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
                   <button 
@@ -480,14 +751,14 @@ export default defineComponent({
               </div>
               <div>
                 <label for="encrytion" class="block text-sm font-medium text-gray-700">Encrytion</label>
-                <select id="encrytion" v-model="form.encrytion" name="encrytion" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <select id="encrytion" v-model="form.encrytion" name="encrytion" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                   <option value="WPA">WPA/WPA2/WPA3</option>
                   <option value="WEP">WEP</option>
                   <option value="nopass">None</option>
                 </select>
               </div>
               <div class="py-6 text-right">
-                <button :disabled="disableButton" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button :disabled="disableButton" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Generate
                 </button>
               </div>
@@ -498,11 +769,11 @@ export default defineComponent({
                 name="text_qr" 
                 v-model="text_qr"
                 rows="3"
-                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" 
+                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-lg" 
                 placeholder="Input your text to generate QR code." 
               />
               <div class="py-6 text-right">
-                <button :disabled="!text_qr" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button :disabled="!text_qr" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Generate
                 </button>
               </div>
@@ -517,7 +788,7 @@ export default defineComponent({
                     v-model="vcard.firstname"
                     id="firstname" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -528,7 +799,7 @@ export default defineComponent({
                     v-model="vcard.lastname"
                     id="lastname" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -546,7 +817,7 @@ export default defineComponent({
                 </div>
                 <div>
                   <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
-                  <select id="gender" v-model="vcard.gender" name="gender" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  <select id="gender" v-model="vcard.gender" name="gender" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
@@ -559,7 +830,7 @@ export default defineComponent({
                     v-model="vcard.address"
                     id="address" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -570,7 +841,7 @@ export default defineComponent({
                     v-model="vcard.city"
                     id="city" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -581,7 +852,7 @@ export default defineComponent({
                     v-model="vcard.postal"
                     id="postal" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -592,7 +863,7 @@ export default defineComponent({
                     v-model="vcard.region"
                     id="region" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -603,7 +874,7 @@ export default defineComponent({
                     v-model="vcard.country"
                     id="country" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -614,7 +885,7 @@ export default defineComponent({
                     v-model="vcard.tel"
                     id="tel" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -625,7 +896,7 @@ export default defineComponent({
                     v-model="vcard.email"
                     id="email" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -636,7 +907,7 @@ export default defineComponent({
                     v-model="vcard.web"
                     id="web" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -647,7 +918,7 @@ export default defineComponent({
                     v-model="vcard.job"
                     id="job" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
                 <div>
@@ -658,12 +929,12 @@ export default defineComponent({
                     v-model="vcard.company"
                     id="name" 
                     autocomplete="off" 
-                    class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                    class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                   />
                 </div>
               </div>
               <div class="py-6 text-right">
-                <button @click="handleVCard" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button @click="handleVCard" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Generate
                 </button>
               </div>
@@ -672,7 +943,7 @@ export default defineComponent({
         </div>
       </div>
       <div class="w-full sm:mt-10 md:mt-0 md:w-2/5">
-        <div class="p-10 drop-shadow-lg bg-white sm:rounded">
+        <div class="p-10 sm:drop-shadow-lg bg-white sm:rounded-lg">
           <transition name="fade" mode="out-in">
             <div 
               v-if="options.data"
@@ -680,18 +951,18 @@ export default defineComponent({
             >
               <div class="w-full mb-3">
                 <transition name="fade" mode="out-in">
-                  <div id="qr-code" class="text-center mx-auto rounded drop-shadow-md transition-all duration-700" ref="qrCode"></div>
+                  <div id="qr-code" class="text-center mx-auto rounded-lg drop-shadow-md transition-all duration-700" ref="qrCode"></div>
                 </transition>
               </div>
               <label class="block text-sm font-medium text-gray-700">
-                <select v-model="extension" class="mt-1 mr-5 mb-3 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <select v-model="extension" class="mt-1 mr-5 mb-3 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                   <option value="svg">SVG</option>
                   <option value="png">PNG</option>
                   <option value="jpeg">JPEG</option>
                   <option value="webp">WEBP</option>
                 </select>
                 <button 
-                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   @click="download"
                 >
                   Download
@@ -707,7 +978,7 @@ export default defineComponent({
               </div>
             </div>
           </transition>
-          <div class="bg-white border border-gray-300 rounded shadow-sm mt-5">
+          <div class="bg-white border border-gray-300 rounded-lg shadow mt-5">
             <ul>
               <li 
                 v-for="(v, i) in accordionNames"
@@ -743,10 +1014,10 @@ export default defineComponent({
                         <div class="flex text-sm text-gray-600 mt-1">
                           <label 
                             for="file-upload" 
-                            class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                            class="relative cursor-pointer bg-white rounded-lg font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                           >
                             <span
-                              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                              class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                               Upload a file
                             </span>
@@ -762,7 +1033,7 @@ export default defineComponent({
                           <button 
                             v-if="options.image"
                             @click="options.image = ''" 
-                            class="ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            class="ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           >
                             Clear
                           </button>
@@ -775,7 +1046,7 @@ export default defineComponent({
                           name="hide_bg"
                           v-model="options.imageOptions.hideBackgroundDots" 
                           type="checkbox" 
-                          class="checkbox__input focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" 
+                          class="checkbox__input focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded-lg" 
                         />
                         <label for="hide_bg" class="mt-1 checkbox__inner border-gray-300"></label>
                       </div>
@@ -790,7 +1061,7 @@ export default defineComponent({
                           min="0"
                           max="1"
                           step="0.1"
-                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                          class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                         />
                       </div>
                       <div class="col-span-6">
@@ -804,7 +1075,7 @@ export default defineComponent({
                           min="0"
                           max="1"
                           step="0.1"
-                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                          class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                         />
                       </div>   
                       <div class="col-span-6">
@@ -816,7 +1087,7 @@ export default defineComponent({
                           id="size" 
                           autocomplete="off" 
                           min="300"
-                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                          class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                         />
                       </div>
                       <div class="col-span-6">
@@ -827,7 +1098,7 @@ export default defineComponent({
                           v-model="options.margin"
                           id="margin" 
                           autocomplete="off" 
-                          class="py-2 px-3 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm border border-solid border-gray-300 rounded-md" 
+                          class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                         />
                       </div>
                       <div class="col-span-12">
@@ -836,7 +1107,7 @@ export default defineComponent({
                           id="errorCorrectionLevel" 
                           v-model="options.qrOptions.errorCorrectionLevel" 
                           name="square_type" 
-                          class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         >
                           <option value="L">L</option>
                           <option value="M">M</option>
@@ -851,7 +1122,7 @@ export default defineComponent({
                     >       
                       <div class="col-span-12">
                         <label for="dots_type" class="block text-sm font-medium text-gray-700">Dots Type</label>
-                        <select id="dots_type" v-model="options.dotsOptions.type" name="dots_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select id="dots_type" v-model="options.dotsOptions.type" name="dots_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                           <option value="square">Square</option>
                           <option value="dots">Dots</option>
                           <option value="rounded">Rounded</option>
@@ -908,7 +1179,7 @@ export default defineComponent({
                     >       
                       <div class="col-span-12">
                         <label for="square_type" class="block text-sm font-medium text-gray-700">Corners Square Type</label>
-                        <select id="square_type" v-model="options.cornersSquareOptions.type" name="square_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select id="square_type" v-model="options.cornersSquareOptions.type" name="square_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                           <option value="">None</option>
                           <option value="square">Square</option>
                           <option value="dot">Dot</option>
@@ -963,7 +1234,7 @@ export default defineComponent({
                     >       
                       <div class="col-span-12">
                         <label for="dot_type" class="block text-sm font-medium text-gray-700">Corners Dot Type</label>
-                        <select id="dot_type" v-model="options.cornersDotOptions.type" name="dot_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <select id="dot_type" v-model="options.cornersDotOptions.type" name="dot_type" class="mt-1 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                           <option value="">None</option>
                           <option value="square">Square</option>
                           <option value="dot">Dot</option>
@@ -1067,13 +1338,3 @@ export default defineComponent({
     </div>
   </div>
 </template>
-
-<style>
-body {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  background: #f0f3f4;
-}
-</style>

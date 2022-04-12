@@ -2309,6 +2309,11 @@ jsonpointer@^5.0.0:
   resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-5.0.0.tgz#f802669a524ec4805fa7389eadbc9921d5dc8072"
   integrity sha512-PNYZIdMjVIvVgDSYKTT63Y+KZ6IZvGRNNWcxwD+GNnUz1MKPfv30J8ueCjdwcN0nDx2SlshgyB7Oy0epAzVRRg==
 
+jsqr@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/jsqr/-/jsqr-1.4.0.tgz#8efb8d0a7cc6863cb6d95116b9069123ce9eb2d1"
+  integrity sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==
+
 jstransformer@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/jstransformer/-/jstransformer-1.0.0.tgz#ed8bf0921e2f3f1ed4d5c1a44f68709ed24722c3"
@@ -3360,6 +3365,13 @@ vue3-normal-library@^0.1.6:
     raf "^3.4.1"
     vue "^3.2.6"
     vue-types "^4.1.0"
+
+vue3-qr-reader@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/vue3-qr-reader/-/vue3-qr-reader-1.0.0.tgz#a43c0f9badd39af611f37a92a8dd18e2150f41c5"
+  integrity sha512-BRgmR+lDPkNwgL6skSaEOGFg4Aup/FLYnOGFCV0knYHxfbAnliJN/+wr//iqD2G3EOBrXw4TPGNfj/5Wxl7wwQ==
+  dependencies:
+    jsqr "^1.4.0"
 
 vue@^3.2.25, vue@^3.2.6:
   version "3.2.31"
