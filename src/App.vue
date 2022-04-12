@@ -668,8 +668,7 @@ export default defineComponent({
                                   @decode="onDecode" 
                                   :torch="torchActive" 
                                   :camera="camera"
-                                  @init="onInit"  
-                                  :capture="captureSelected.value"                              
+                                  @init="onInit"                                                                 
                                 >
                                   <button               
                                     class="absolute bottom-0 right-0 w-12 h-12 m-3 py-2 px-3 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"
@@ -706,6 +705,7 @@ export default defineComponent({
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only" 
+                                      :capture="captureSelected.value" 
                                       @decode="onDecode" 
                                     />
                                   </label>    
