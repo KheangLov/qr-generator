@@ -421,7 +421,7 @@ export default defineComponent({
     async onInit(promise: Promise<any>) {
       try {
         const { capabilities } = await promise
-        console.log(capabilities)
+        // console.log(capabilities)
         this.torchNotSupported = !capabilities.torch
         this.qrLoaded = true
       } catch (error: any) {
@@ -450,8 +450,21 @@ export default defineComponent({
       }
     },
     onDecode(data: any) {
-      console.log(this.captureSelected)
-      console.log(data)
+      // console.log(this.captureSelected)
+      // console.log(data)
+    },
+    async onDetect(promise: any) {
+      try {
+        const {
+          imageData,    // raw image data of image/frame
+          content,      // decoded String or null
+          location      // QR code coordinates or null
+        } = await promise
+
+        console.log('Img: ', imageData, 'Content: ', content, 'Loc: ', location)
+      } catch (error) {
+        console.error(error)
+      }
     },
     switchCamera() {
       if (this.noRearCamera && this.noFrontCamera) {
@@ -597,7 +610,7 @@ export default defineComponent({
     <div class="w-full gap-10 md:flex">
       <div class="w-full md:w-3/5">
         <div class="text-left p-10 sm:drop-shadow-lg bg-white sm:rounded-lg">
-          <div class="flex justify-between">
+          <div class="flex justify-between items-start">
             <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
               QR Data              
             </h2>
@@ -706,8 +719,9 @@ export default defineComponent({
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only" 
-                                      :capture="false" 
+                                      capture="false" 
                                       @decode="onDecode" 
+                                      @detect="onDetect"
                                     />
                                   </label>    
                                 </qr-stream>
