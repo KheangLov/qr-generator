@@ -450,21 +450,7 @@ export default defineComponent({
       }
     },
     onDecode(data: any) {
-      // console.log(this.captureSelected)
-      // console.log(data)
-    },
-    async onDetect(promise: any) {
-      try {
-        const {
-          imageData,    // raw image data of image/frame
-          content,      // decoded String or null
-          location      // QR code coordinates or null
-        } = await promise
-
-        console.log('Img: ', imageData, 'Content: ', content, 'Loc: ', location)
-      } catch (error) {
-        console.error(error)
-      }
+      this.scanResult = data
     },
     switchCamera() {
       if (this.noRearCamera && this.noFrontCamera) {
@@ -521,7 +507,7 @@ export default defineComponent({
     const captureOptions = [
       { text: "Rear Camera", value: "environment" },
       { text: "Front Camera", value: "user" },
-      { text: "File Dialog", value: false },
+      { text: "File Dialog", value: "" },
     ]
 
     return {
@@ -598,7 +584,8 @@ export default defineComponent({
       lackingFeature: false as boolean,
       fullscreen: false as boolean,
       captureOptions,
-      captureSelected: captureOptions[0]
+      captureSelected: captureOptions[0],
+      scanResult: '' as any,
     }
   }
 })
@@ -656,20 +643,25 @@ export default defineComponent({
                                 Your browser is lacking feature!
                               </p>   
 
-                              <select 
-                                id="captureOptions" 
-                                v-model="captureSelected" 
-                                name="captureOptions" 
-                                class="mb-2 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                              >
-                                <option 
-                                  v-for="option in captureOptions" 
-                                  :key="option.text" 
-                                  :value="option"
+                              <div class="sm:flex sm:justify-between">
+                                <select 
+                                  id="captureOptions" 
+                                  v-model="captureSelected" 
+                                  name="captureOptions" 
+                                  class="mb-2 mr-2 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 >
-                                  {{ option.text }}
-                                </option>
-                              </select>
+                                  <option 
+                                    v-for="option in captureOptions" 
+                                    :key="option.text" 
+                                    :value="option"
+                                  >
+                                    {{ option.text }}
+                                  </option>
+                                </select>
+                                <p class="text-gray-700 mb-2">
+                                  Result: {{ scanResult }}
+                                </p>
+                              </div>
 
                               <div 
                                 class="relative"
@@ -718,11 +710,9 @@ export default defineComponent({
                                     <qr-capture                                      
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
-                                      class="mb-2 sr-only" 
-                                      capture="user" 
-                                      :multiple="false"
+                                      class="mb-2 sr-only"
+                                      :capture="captureOptions.value" 
                                       @decode="onDecode" 
-                                      @detect="onDetect"
                                     />
                                   </label>    
                                 </qr-stream>
