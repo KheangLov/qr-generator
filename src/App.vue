@@ -671,8 +671,7 @@ export default defineComponent({
                                   @init="onInit"  
                                   :capture="captureSelected.value"                              
                                 >
-                                  <button           
-                                    v-if="!torchNotSupported"                        
+                                  <button               
                                     class="absolute bottom-0 right-0 w-12 h-12 m-3 py-2 px-3 text-white text-sm font-semibold rounded-lg shadow focus:outline-none"
                                     :class="!torchActive ? 'bg-gray-400' : 'bg-indigo-500'"
                                     @click="torchActive = !torchActive" 
