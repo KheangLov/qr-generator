@@ -450,6 +450,7 @@ export default defineComponent({
       }
     },
     onDecode(data: any) {
+      console.log(this.captureSelected)
       console.log(data)
     },
     switchCamera() {
@@ -705,7 +706,7 @@ export default defineComponent({
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only" 
-                                      :capture="captureSelected.value" 
+                                      :capture="false" 
                                       @decode="onDecode" 
                                     />
                                   </label>    
