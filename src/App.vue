@@ -503,7 +503,13 @@ export default defineComponent({
         gradient: false as unknown as Gradient
       }
     }
-    
+
+    const captureOptions = [
+      { text: "Rear Camera", value: "environment" },
+      { text: "Front Camera", value: "user" },
+      { text: "File Dialog", value: false },
+    ]
+
     return {
       activeKey: 'pure',      
       gradient: '',
@@ -577,6 +583,8 @@ export default defineComponent({
       noServedCamera: false as boolean,
       lackingFeature: false as boolean,
       fullscreen: false as boolean,
+      captureOptions,
+      captureSelected: captureOptions[0]
     }
   }
 })
@@ -632,7 +640,22 @@ export default defineComponent({
                               </p>  
                               <p class="text-red-500 mb-2" v-if="lackingFeature">
                                 Your browser is lacking feature!
-                              </p>                                                                  
+                              </p>   
+
+                              <select 
+                                id="captureOptions" 
+                                v-model="captureSelected" 
+                                name="captureOptions" 
+                                class="mb-2 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              >
+                                <option 
+                                  v-for="option in captureOptions" 
+                                  :key="option.text" 
+                                  :value="option"
+                                >
+                                  {{ option.text }}
+                                </option>
+                              </select>
 
                               <div 
                                 class="relative"
@@ -645,7 +668,8 @@ export default defineComponent({
                                   @decode="onDecode" 
                                   :torch="torchActive" 
                                   :camera="camera"
-                                  @init="onInit"                                
+                                  @init="onInit"  
+                                  :capture="captureSelected.value"                              
                                 >
                                   <button           
                                     v-if="!torchNotSupported"                        
