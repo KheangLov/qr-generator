@@ -457,10 +457,10 @@ export default defineComponent({
         this.camera = 'auto'
         this.noRearCamera = false
         this.noFrontCamera = false
-      } else if (this.camera === 'rear') {
-        this.camera = 'front'
-      } else {
+      } else if (this.camera === 'front') {
         this.camera = 'rear'
+      } else {
+        this.camera = 'front'
       }
     },
   },
