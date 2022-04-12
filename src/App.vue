@@ -715,11 +715,12 @@ export default defineComponent({
                                     >
                                       <CameraIcon />
                                     </span>
-                                    <qr-capture
+                                    <qr-capture                                      
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only" 
                                       capture="user" 
+                                      :multiple="false"
                                       @decode="onDecode" 
                                       @detect="onDetect"
                                     />
