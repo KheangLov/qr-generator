@@ -3,16 +3,13 @@ const colors = require('tailwindcss/colors')
 const { fontFamily } = require('tailwindcss/defaultTheme')
 
 module.exports = {
-  purge: [
+  darkMode: 'class',
+  content: [
+    "./index.html",
     './docs/public/index.html',
     './docs/src/*.{vue,js,ts,jsx,tsx}',
     './src/**/*.{vue,js,ts,jsx,tsx}',
     path.resolve(__dirname, './node_modules/litepie-datepicker/**/*.js')
-  ],
-  darkMode: 'class',
-  content: [
-    "./index.html",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
