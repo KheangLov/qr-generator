@@ -11,6 +11,6 @@ const wifiConnect = (wifiInfo: WifiInfo) => {
     wifi.connect(wifiInfo, () => console.log('Connected'))
 }
 
-export default {
+export {
     wifiConnect
 }
