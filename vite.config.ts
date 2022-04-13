@@ -11,14 +11,17 @@ export default defineConfig({
       filename: 'sw.ts',
       includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],  
       strategies: 'injectManifest',
+      registerType: 'autoUpdate',
       injectManifest: {
         globPatterns: [],
       },
       manifest: {
         name: 'QR Generator',
-        short_name: 'QRG',
+        short_name: 'QR Generator',
         description: 'Generate QR code',
         theme_color: '#ffffff',
+        display: "standalone",
+        start_url: '',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -38,11 +41,15 @@ export default defineConfig({
           }
         ]
       },
-      // workbox: {
-      //   clientsClaim: true,
-      //   sourcemap: true,
-      //   cleanupOutdatedCaches: false,
-      // }  
+      workbox: {
+        clientsClaim: true,
+        sourcemap: true,
+        cleanupOutdatedCaches: true,
+        globPatterns: [],
+      },
+      devOptions: {
+        enabled: true
+      }
     }),
   ]
 })
