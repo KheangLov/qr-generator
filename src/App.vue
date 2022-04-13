@@ -989,7 +989,7 @@ export default defineComponent({
             >
               <div class="w-full mb-3">
                 <transition name="fade" mode="out-in">
-                  <div id="qr-code" class="text-center mx-auto rounded-lg drop-shadow-md transition-all duration-700" ref="qrCode"></div>
+                  <div id="qr-code" class="p-2 text-center mx-auto rounded-lg drop-shadow-md transition-all duration-700" ref="qrCode"></div>
                 </transition>
               </div>
               <label class="block text-sm font-medium text-gray-700">
