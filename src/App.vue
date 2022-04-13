@@ -280,6 +280,13 @@ export default defineComponent({
       },
       deep: true,
     },
+    captureSelected(val) {
+      if (!val.value) {
+        const prox = this.$refs.qrCaptureUpload as any
+        const ele = prox.$el as HTMLELement
+        ele.removeAttribute('capture')
+      }
+    },
     form: {
       handler(val) {
         if (val.ssid && val.encrytion && val.password) {
@@ -507,7 +514,7 @@ export default defineComponent({
     const captureOptions = [
       { text: "Rear Camera", value: "environment" },
       { text: "Front Camera", value: "user" },
-      { text: "File Dialog", value: "" },
+      { text: "File Dialog", value: false },
     ]
 
     return {
@@ -707,11 +714,12 @@ export default defineComponent({
                                     >
                                       <CameraIcon />
                                     </span>
-                                    <qr-capture                                      
+                                    <qr-capture  
+                                      ref="qrCaptureUpload"                                    
                                       id="qr-capture-upload" 
                                       name="qr-capture-upload"  
                                       class="mb-2 sr-only"
-                                      :capture="captureSelected.value" 
+                                      capture="" 
                                       @decode="onDecode" 
                                     />
                                   </label>    
