@@ -283,7 +283,7 @@ export default defineComponent({
     captureSelected(val) {
       if (!val.value) {
         const prox = this.$refs.qrCaptureUpload as any
-        const ele = prox.$el as HTMLELement
+        const ele = prox.$el as HTMLElement
         ele.removeAttribute('capture')
       }
     },
