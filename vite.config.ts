@@ -46,6 +46,43 @@ export default defineConfig({
         sourcemap: true,
         cleanupOutdatedCaches: true,
         globPatterns: [],
+        runtimeCaching: [
+          {
+            urlPattern: '/manifest.json',
+            method: 'GET',
+            handler: 'CacheFirst',
+            // @ts-ignore
+            strategyOptions: { cacheableResponse: { statuses: [0, 200] } }
+          },
+          {
+            urlPattern: '/favicon.ico',
+            method: 'GET',
+            handler: 'CacheFirst',
+            // @ts-ignore
+            strategyOptions: { cacheableResponse: { statuses: [0, 200] } }
+          },
+          {
+            urlPattern: '/*',
+            method: 'GET',
+            handler: 'CacheFirst',
+            // @ts-ignore
+            strategyOptions: { cacheableResponse: { statuses: [0, 200] } }
+          },
+          {
+            urlPattern: '/pwa-192x192.png',
+            method: 'GET',
+            handler: 'CacheFirst',
+            // @ts-ignore
+            strategyOptions: { cacheableResponse: { statuses: [0, 200] } }
+          },
+          {
+            urlPattern: '/src/main.ts',
+            method: 'GET',
+            handler: 'CacheFirst',
+            // @ts-ignore
+            strategyOptions: { cacheableResponse: { statuses: [0, 200] } }
+          },
+        ]
       },
       devOptions: {
         enabled: true

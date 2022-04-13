@@ -5,7 +5,7 @@
       <div class="relative flex items-center justify-between sm:h-20 h-16">
         <div class="flex-1 flex items-center justify-center justify-items-center sm:items-stretch sm:justify-start">
           <div class="flex-shrink-0 flex items-center">
-            <img class="h-8 w-auto mr-3" src="/pwa-512x512.png" alt="QR Generator" />
+            <img class="h-8 w-8 mr-3" src="/pwa-512x512.png" alt="QR Generator" />
             <h2 class="font-bold tracking-widest uppercase text-xl text-white">QR Generator</h2>
           </div>
         </div>
