@@ -1043,9 +1043,9 @@ export default defineComponent({
                   @click="seletedAccordion = seletedAccordion === i ? -1 : i"
                 >
                   <div class="flex items-center justify-between">
-                    <h4 class="block font-medium text-gray-700">
+                    <h3 class="block font-medium text-gray-700">
                       {{ v }}:
-                    </h4>
+                    </h3>
                     <span class="ico-plus"></span>
                   </div>
                 </button>
