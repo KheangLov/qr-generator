@@ -624,6 +624,7 @@ export default defineComponent({
             </h2>
             <button @click="onToggle" type="button" class="bg-trasparent">
               <CameraIcon class="h-5 w-5 text-gray-700" />
+              <div class="sr-only">Camera</div>
             </button> 
             <teleport to="body">
               <TransitionRoot as="template" :show="isOpen">
