@@ -72,23 +72,22 @@ import QRCodeStyling, {
 import { CameraIcon, LightningBoltIcon, SwitchHorizontalIcon, ExternalLinkIcon } from "@heroicons/vue/outline"
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import Navbar from './components/Navbar.vue'
-import { wifiConnect } from './plugins/node-wifi'
 
-interface Vcard {
-  firstname: string,
-  lastname: string,
-  bd: Array<string>|string,
-  gender: string,
-  address: string,
-  city: string,
-  postal: string,
-  region: string,
-  country: string,
-  tel: string,
-  email: string,
-  web: string,
-  job: string,
-  company: string,
+declare type Vcard = {
+  firstname: string;
+  lastname: string;
+  bd: Array<string>|string;
+  gender: string;
+  address: string;
+  city: string;
+  postal: string;
+  region: string;
+  country: string;
+  tel: string;
+  email: string;
+  web: string;
+  job: string;
+  company: string;
 }
 
 declare type CameraType = 'auto' | 'rear' | 'front'
@@ -452,20 +451,27 @@ export default defineComponent({
       }
     },
     onDecode(data: any) {
-      location.href = data
-
       if (typeof data === 'string' && data.substring(0, 4).toLowerCase() === 'wifi') {
         data = data.replace(/wifi:/gi, '').split(';').filter(v => {
           const d = v.split(':')
           return ['s', 'p'].includes(d[0].toLowerCase())
-        })
-        wifiConnect({
-          ssid: data[0].split(':')[1],
-          password: data[1].split(':')[1],
-        })
+        }).join(', ')
+      } else if (this.isValidHttpUrl(data)) {
+        open(data, '_blank')
       }
       
       this.scanResult = data
+    },
+    isValidHttpUrl(str: string) {
+      let url;
+      
+      try {
+        url = new URL(str);
+      } catch (_) {
+        return false;
+      }
+
+      return url.protocol === "http:" || url.protocol === "https:";
     },
     switchCamera() {
       if (this.noRearCamera && this.noFrontCamera) {
@@ -658,28 +664,23 @@ export default defineComponent({
                                 Your browser is lacking feature!
                               </p>   
 
-                              <div class="sm:flex sm:justify-between">
-                                <select 
-                                  id="captureOptions" 
-                                  v-model="captureSelected" 
-                                  name="captureOptions" 
-                                  class="mb-2 mr-2 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              <select 
+                                id="captureOptions" 
+                                v-model="captureSelected" 
+                                name="captureOptions" 
+                                class="mb-2 mr-2 py-2 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              >
+                                <option 
+                                  v-for="option in captureOptions" 
+                                  :key="option.text" 
+                                  :value="option"
                                 >
-                                  <option 
-                                    v-for="option in captureOptions" 
-                                    :key="option.text" 
-                                    :value="option"
-                                  >
-                                    {{ option.text }}
-                                  </option>
-                                </select>
-                                <p class="text-gray-700 mb-2">
-                                  Result: {{ scanResult }}
-                                </p>
-                              </div>
+                                  {{ option.text }}
+                                </option>
+                              </select>
 
                               <div 
-                                class="relative"
+                                class="relative mb-2"
                                 :class="{ 'fullscreen': fullscreen }" 
                                 ref="wrapper" 
                                 @fullscreenchange="onFullscreenChange"
@@ -733,6 +734,10 @@ export default defineComponent({
                                   </label>    
                                 </qr-stream>
                               </div>
+
+                              <p class="text-gray-700 mb-2">
+                                Result: {{ scanResult }}
+                              </p>
                             </div>
                           </div>
                         </div>
