@@ -15,6 +15,7 @@ const app = createApp(App)
 if ('serviceWorker' in navigator) {
     const intervalMS = 60 * 60 * 1000
     const updateSW = registerSW({
+        immediate: true,
         onNeedRefresh(r: any) {
             r && setInterval(() => r.update(), intervalMS)
         },

@@ -19,9 +19,12 @@ export default defineConfig({
         name: 'QR Generator',
         short_name: 'QR Generator',
         description: 'Generate QR code',
-        theme_color: '#ffffff',
         display: "standalone",
-        start_url: '',
+        theme_color: "#ffffff",
+        background_color: "#ffffff",
+        start_url: "/",
+        lang: "en-US",
+        orientation: "portrait-primary",
         icons: [
           {
             src: 'pwa-192x192.png',
