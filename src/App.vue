@@ -72,6 +72,7 @@ import QRCodeStyling, {
 import { CameraIcon, LightningBoltIcon, SwitchHorizontalIcon, ExternalLinkIcon } from "@heroicons/vue/outline"
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import Navbar from './components/Navbar.vue'
+import { wifiConnect } from './plugins/node-wifi'
 
 interface Vcard {
   firstname: string,
@@ -421,14 +422,10 @@ export default defineComponent({
       reader.onload = () => {
         this.options.image = reader.result as string
       }
-      reader.onerror = error => {
-        console.log('Error: ', error)
-      }
     },
     async onInit(promise: Promise<any>) {
       try {
         const { capabilities } = await promise
-        // console.log(capabilities)
         this.torchNotSupported = !capabilities.torch
         this.qrLoaded = true
       } catch (error: any) {
@@ -452,11 +449,22 @@ export default defineComponent({
         } else if (error.name === 'StreamApiNotSupportedError') {
           this.lackingFeature = true
         }
-
-        console.error(error)
       }
     },
     onDecode(data: any) {
+      location.href = data
+
+      if (typeof data === 'string' && data.substring(0, 4).toLowerCase() === 'wifi') {
+        data = data.replace(/wifi:/gi, '').split(';').filter(v => {
+          const d = v.split(':')
+          return ['s', 'p'].includes(d[0].toLowerCase())
+        })
+        wifiConnect({
+          ssid: data[0].split(':')[1],
+          password: data[1].split(':')[1],
+        })
+      }
+      
       this.scanResult = data
     },
     switchCamera() {
