@@ -614,7 +614,7 @@ export default defineComponent({
 
 <template>
   <Navbar />
-  <div class="container mx-auto sm:py-10">
+  <div class="container mx-auto sm:py-10 lg:px-10">
     <div class="w-full gap-10 md:flex">
       <div class="w-full md:w-3/5">
         <div class="text-left p-10 sm:drop-shadow-lg bg-white sm:rounded-lg">

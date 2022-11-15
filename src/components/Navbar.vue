@@ -1,7 +1,7 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <template>
-  <Disclosure as="nav" class="bg-gray-800 drop-shadow-lg border-0">
-    <div class="container mx-auto">
+  <Disclosure as="nav" class="bg-gray-800 drop-shadow-lg border-0 sticky top-0 z-50">
+    <div class="container mx-auto lg:px-10">
       <div class="relative flex items-center justify-between sm:h-20 h-16">
         <div class="flex-1 flex items-center justify-center justify-items-center sm:items-stretch sm:justify-start">
           <div class="flex-shrink-0 flex items-center">
