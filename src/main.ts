@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-// @ts-ignore
 import { registerSW } from 'virtual:pwa-register'
 // @ts-ignore
 import QrReader from 'vue3-qr-reader'
@@ -16,11 +15,13 @@ if ('serviceWorker' in navigator) {
     const intervalMS = 60 * 60 * 1000
     const updateSW = registerSW({
         immediate: true,
-        onNeedRefresh(r: any) {
+        // @ts-ignore
+        onNeedRefresh(r?: any) {
             r && setInterval(() => r.update(), intervalMS)
-        },
+        }
     })
 
+    // @ts-ignore
     app.use(updateSW)
 }
 
