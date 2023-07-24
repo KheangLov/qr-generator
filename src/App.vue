@@ -73,7 +73,7 @@ import { CameraIcon, LightningBoltIcon, SwitchHorizontalIcon, ExternalLinkIcon }
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import Navbar from './components/Navbar.vue'
 
-declare type Vcard = {
+type Vcard = {
   firstname: string;
   lastname: string;
   bd: Array<string>|string;
@@ -90,7 +90,7 @@ declare type Vcard = {
   company: string;
 }
 
-declare type CameraType = 'auto' | 'rear' | 'front'
+type CameraType = 'auto' | 'rear' | 'front'
 
 export default defineComponent({
   components: {
@@ -617,7 +617,7 @@ export default defineComponent({
   <div class="container mx-auto sm:py-10 lg:px-10">
     <div class="w-full gap-10 md:flex">
       <div class="w-full md:w-3/5">
-        <div class="text-left p-10 sm:drop-shadow-lg bg-white sm:rounded-lg">
+        <div class="text-left pt-10 px-10 sm:pb-10 sm:drop-shadow-lg bg-white sm:rounded-lg">
           <div class="flex justify-between items-start">
             <h2 class="text-gray-700 mb-6 font-semibold text-xl uppercase tracking-widest">
               QR Data              
@@ -823,7 +823,7 @@ export default defineComponent({
                 rows="3"
                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-lg" 
                 placeholder="Input your text to generate QR code." 
-              />
+              ></textarea>
               <div class="py-6 text-right">
                 <button :disabled="!text_qr" @click="generateQr" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Generate

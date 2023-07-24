@@ -67,3 +67,17 @@ textarea {
 .fade-leave-to {
   opacity: 0;
 }
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  right: 0;
+  z-index: 1000;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: rgb(31 41 55 / 1);
+}
