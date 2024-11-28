@@ -405,6 +405,20 @@ export default defineComponent({
         this.options.data = this.text_qr
       }
     },
+    shareLink() {
+      const url = `https://www.kheang-nita-wedding.life?to=${this.formShare.name}`; // Replace with the link you want to share
+      const message = encodeURIComponent(url);
+      const messengerUrl = `fb-messenger://share?link=${message}`;
+      window.location.href = messengerUrl;
+    },
+    copyLink() {
+      const url = `https://www.kheang-nita-wedding.life?to=${this.formShare.name}`; // Replace with the link you want to share
+      navigator.clipboard.writeText(url).then(function() {
+          console.log('Link copied to clipboard');
+      }).catch(function(error) {
+          console.error('Error copying link: ', error);
+      });
+    },
     download() {
       this.qrCode.download({ extension: this.extension as FileExtension })
     },
@@ -556,6 +570,9 @@ export default defineComponent({
         encrytion: 'WPA',
         password: '',
       },
+      formShare: {
+        name: ''
+      },
       options,
       extension: 'svg',
       qrCode: new QRCodeStyling(options) as QRCodeStyling,
@@ -573,7 +590,8 @@ export default defineComponent({
       buttonTabs: [
         'WIFI',
         'Text',
-        'vCard'
+        'vCard',
+        'Share Link'
       ],
       vcard: {
         firstname: '',
@@ -991,6 +1009,26 @@ export default defineComponent({
                 </button>
               </div>
             </div>
+            <div v-else-if="seletedButton === 3">
+              <div>
+                <input 
+                  type="text" 
+                  name="sname" 
+                  v-model="formShare.name"
+                  id="sname" 
+                  autocomplete="off" 
+                  class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
+                />
+              </div>
+              <div class="py-6 text-right">
+                <button :disabled="!formShare.name" @click="copyLink" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Copy
+                </button>
+                <button :disabled="!formShare.name" @click="shareLink" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Share FB
+                </button>
+              </div>
+            </div>    
           </transition>
         </div>
       </div>
