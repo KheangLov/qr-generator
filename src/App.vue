@@ -406,14 +406,13 @@ export default defineComponent({
       }
     },
     shareLink() {
-      const name = btoa(this.formShare.name);
+      const name = encodeURIComponent(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
-      const message = encodeURIComponent(url);
-      const messengerUrl = `fb-messenger://share?link=${message}`;
+      const messengerUrl = `fb-messenger://share?link=${url}`;
       window.location.href = messengerUrl;
     },
     copyLink() {
-      const name = btoa(this.formShare.name);
+      const name = encodeURIComponent(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
       navigator.clipboard.writeText(url).then(function() {
           console.log('Link copied to clipboard');
