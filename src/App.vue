@@ -408,25 +408,25 @@ export default defineComponent({
     shareLink() {
       const name = encodeURIComponent(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
-      const messengerUrl = `fb-messenger://share?link=${url}`;
-      window.location.href = messengerUrl;
+      this.messengerUrl = `fb-messenger://share?link=${url}`;
+      window.location.href = this.messengerUrl;
     },
     shareTL() {
       const name = encodeURIComponent(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
-      const messengerUrl = `https://t.me/share/url?url=${url}`;
-      window.location.href = messengerUrl;
+      this.messengerUrl = `https://t.me/share/url?url=${url}`;
+      window.location.href = this.messengerUrl;
     },
     shareLinkOnMessenger() {
         const url = `https://www.kheang-nita-wedding.life?to=%E1%9E%9B%E1%9F%84%E1%9E%80%E2%80%8B%20%E1%9E%8F%E1%9E%B6%20%E1%9E%9F%E1%9F%81%E1%9E%8F`;
-        const messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURIComponent(url)}&redirect_uri=${encodeURIComponent(window.location.href)}`;
+        this.messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURIComponent(url)}&redirect_uri=${encodeURIComponent(window.location.href)}`;
         
-        window.open(messengerUrl, '_blank');
+        window.open(this.messengerUrl, '_blank');
     },
     copyLink() {
       const name = encodeURIComponent(this.formShare.name);
-      const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
-      navigator.clipboard.writeText(url).then(function() {
+      this.messengerUrl = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
+      navigator.clipboard.writeText(this.messengerUrl).then(function() {
           console.log('Link copied to clipboard');
       }).catch(function(error) {
           console.error('Error copying link: ', error);
@@ -559,6 +559,7 @@ export default defineComponent({
     ]
 
     return {
+      messengerUrl: '',
       activeKey: 'pure',      
       gradient: '',
       gradientArray: [] as Array<string>,
@@ -1032,6 +1033,7 @@ export default defineComponent({
                   autocomplete="off" 
                   class="relative block w-full pl-3 pr-12 py-2.5 rounded-lg overflow-hidden text-sm text-litepie-secondary-700 placeholder-litepie-secondary-400 transition-colors bg-white border border-litepie-secondary-300 focus:border-litepie-primary-300 focus:ring focus:ring-litepie-primary-500 focus:ring-opacity-10 focus:outline-none dark:bg-litepie-secondary-800 dark:border-litepie-secondary-700 dark:text-litepie-secondary-100 dark:placeholder-litepie-secondary-500 dark:focus:border-litepie-primary-500 dark:focus:ring-opacity-20 mt-1" 
                 />
+                <div>{{ messengerUrl }}</div>
               </div>
               <div class="py-6 text-right">
                 <button :disabled="!formShare.name" @click="copyLink" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
