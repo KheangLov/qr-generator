@@ -414,8 +414,14 @@ export default defineComponent({
     shareTL() {
       const name = encodeURIComponent(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
-      const messengerUrl = `https://t.me/share/url?url=${url}&text=${name}`;
+      const messengerUrl = `https://t.me/share/url?url=${url}`;
       window.location.href = messengerUrl;
+    },
+    shareLinkOnMessenger() {
+        const url = `https://www.kheang-nita-wedding.life?to=%E1%9E%9B%E1%9F%84%E1%9E%80%E2%80%8B%20%E1%9E%8F%E1%9E%B6%20%E1%9E%9F%E1%9F%81%E1%9E%8F`;
+        const messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURIComponent(url)}&redirect_uri=${encodeURIComponent(window.location.href)}`;
+        
+        window.open(messengerUrl, '_blank');
     },
     copyLink() {
       const name = encodeURIComponent(this.formShare.name);
@@ -1031,7 +1037,7 @@ export default defineComponent({
                 <button :disabled="!formShare.name" @click="copyLink" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Copy
                 </button>
-                <button :disabled="!formShare.name" @click="shareLink" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button :disabled="!formShare.name" @click="shareLinkOnMessenger" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share FB
                 </button>
                 <button :disabled="!formShare.name" @click="shareTL" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
