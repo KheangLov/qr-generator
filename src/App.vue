@@ -611,10 +611,10 @@ export default defineComponent({
       text_qr: '',
       seletedButton: 0,
       buttonTabs: [
+        'Share Link',
         'WIFI',
         'Text',
         'vCard',
-        'Share Link'
       ],
       vcard: {
         firstname: '',
@@ -811,7 +811,7 @@ export default defineComponent({
             </div>
           </div>
           <transition name="fade" mode="out-in">
-            <div v-if="seletedButton === 0" class="grid sm:grid-cols-2 gap-5">       
+            <div v-if="seletedButton === 3" class="grid sm:grid-cols-2 gap-5">       
               <div>
                 <label for="ssid" class="block text-sm font-medium text-gray-700">SSID</label>
                 <input 
@@ -1032,7 +1032,7 @@ export default defineComponent({
                 </button>
               </div>
             </div>
-            <div v-else-if="seletedButton === 3">
+            <div v-else-if="seletedButton === 0">
               <div>
                 <input 
                   type="text" 
