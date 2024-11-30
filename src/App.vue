@@ -411,6 +411,12 @@ export default defineComponent({
       const messengerUrl = `fb-messenger://share?link=${url}`;
       window.location.href = messengerUrl;
     },
+    shareTL() {
+      const name = encodeURIComponent(this.formShare.name);
+      const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
+      const messengerUrl = `https://t.me/share/url?url=${url}&text=${name}`;
+      window.location.href = messengerUrl;
+    },
     copyLink() {
       const name = encodeURIComponent(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
@@ -1027,6 +1033,9 @@ export default defineComponent({
                 </button>
                 <button :disabled="!formShare.name" @click="shareLink" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share FB
+                </button>
+                <button :disabled="!formShare.name" @click="shareTL" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Share TL
                 </button>
               </div>
             </div>    
