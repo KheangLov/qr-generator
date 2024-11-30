@@ -295,6 +295,15 @@ export default defineComponent({
       },
       deep: true,
     },
+    formShare: {
+      handler(val) {
+        if (val.name) {
+          const name = encodeURIComponent(this.formShare.name);
+          this.messengerUrl = `https://www.kheang-nita-wedding.life?to=${name}`;
+        }
+      },
+      deep: true,
+    },
     seletedAccordion(val) {
       if (val >= 0) {
         const refEle = this.$refs[`container_${val}`] as HTMLCollection 
