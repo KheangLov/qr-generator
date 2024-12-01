@@ -445,6 +445,15 @@ export default defineComponent({
           console.error('Error copying link: ', error);
       });
     },
+    copyLinkTxt() {
+      const name = encodeURI(this.formShare.name);
+      this.messengerUrl = `សិរីមង្គលអាពាហ៍ពិពាហ៍ - ឃាង & និត្តា\nសូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយសអញ្ជើញចូលរួមពិធីរៀបអាពាហ៍ពិពាហ៍​ ដើម្បីប្រសិទ្ធពរជ័យ សិរីសួស្តីជ័យមង្គលក្នុង ពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍កូនប្រុស កូនស្រីរបស់យើងខ្ញុំ សូមអរគុណ។\nសូមធ្វើការចុចលើតំំណរខាងក្រោមដើំម្បីបើកធៀបការឌីជីថល\nhttps://www.kheang-nita-wedding.life?to=${name}`;
+      navigator.clipboard.writeText(this.messengerUrl).then(function() {
+          console.log('Link copied to clipboard');
+      }).catch(function(error) {
+          console.error('Error copying link: ', error);
+      });
+    },
     copyLinkMS() {
       this.messengerUrl = encodeURIComponent(`https://www.kheang-nita-wedding.life?to=${this.formShare.name}`); // Replace with the link you want to share
       navigator.clipboard.writeText(this.messengerUrl).then(function() {
@@ -1060,13 +1069,16 @@ export default defineComponent({
                 <button :disabled="!formShare.name" @click="copyLink" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Copy
                 </button>
-                <button :disabled="!formShare.name" @click="copyLinkMS" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  Copy MS
+                <button :disabled="!formShare.name" @click="copyLinkTxt" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Copy with text
                 </button>
+                <!-- <button :disabled="!formShare.name" @click="copyLinkMS" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Copy MS
+                </button> -->
                 <a :href="messengerUrl" target="_blank" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Open
                 </a>
-                <button :disabled="!formShare.name" @click="shareLinkOnMS" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <!-- <button :disabled="!formShare.name" @click="shareLinkOnMS" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share MS
                 </button>
                 <button :disabled="!formShare.name" @click="shareLinkOnMessenger" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -1078,6 +1090,13 @@ export default defineComponent({
                 <button :disabled="!formShare.name" @click="shareTL" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share TL
                 </button>
+                <div
+                  class="fb-send-to-messenger" 
+                  messenger_app_id="373794453282051" 
+                  :ref="messengerUrl" 
+                  color="blue"
+                  size="standard"
+                ></div> -->
               </div>
             </div>    
           </transition>
