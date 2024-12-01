@@ -298,7 +298,7 @@ export default defineComponent({
     formShare: {
       handler(val) {
         if (val.name) {
-          const name = encodeURIComponent(this.formShare.name);
+          const name = encodeURI(this.formShare.name);
           this.messengerUrl = `https://www.kheang-nita-wedding.life?to=${name}`;
         }
       },
@@ -415,25 +415,25 @@ export default defineComponent({
       }
     },
     shareLink() {
-      const name = encodeURIComponent(this.formShare.name);
+      const name = encodeURI(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
       this.messengerUrl = `fb-messenger://share?link=${url}`;
       window.location.href = this.messengerUrl;
     },
     shareTL() {
-      const name = encodeURIComponent(this.formShare.name);
+      const name = encodeURI(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
       this.messengerUrl = `https://t.me/share/url?url=${url}`;
       window.location.href = this.messengerUrl;
     },
     shareLinkOnMessenger() {
-        const url = `https://www.kheang-nita-wedding.life?to=%E1%9E%9B%E1%9F%84%E1%9E%80%E2%80%8B%20%E1%9E%8F%E1%9E%B6%20%E1%9E%9F%E1%9F%81%E1%9E%8F`;
-        this.messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURIComponent(url)}&redirect_uri=${encodeURIComponent(window.location.href)}`;
+        const url = `https://www.kheang-nita-wedding.life`;
+        this.messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURI(url)}&redirect_uri=${encodeURI(window.location.href)}`;
         
         window.open(this.messengerUrl, '_blank');
     },
     copyLink() {
-      const name = encodeURIComponent(this.formShare.name);
+      const name = encodeURI(this.formShare.name);
       this.messengerUrl = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
       navigator.clipboard.writeText(this.messengerUrl).then(function() {
           console.log('Link copied to clipboard');
@@ -1051,12 +1051,12 @@ export default defineComponent({
                 <a :href="messengerUrl" target="_blank" class="code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Open
                 </a>
-                <!-- <button :disabled="!formShare.name" @click="shareLink" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button :disabled="!formShare.name" @click="shareLink" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share FB
                 </button>
                 <button :disabled="!formShare.name" @click="shareTL" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share TL
-                </button> -->
+                </button>
               </div>
             </div>    
           </transition>
