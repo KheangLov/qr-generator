@@ -414,6 +414,12 @@ export default defineComponent({
         this.options.data = this.text_qr
       }
     },
+    shareLinkOnMessenger() {
+      const name = encodeURI(this.formShare.name);
+      const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
+      const messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURI(url)}&redirect_uri=${encodeURI(window.location.href)}`;
+      window.open(messengerUrl, '_blank');
+    },
     shareLink() {
       const name = encodeURI(this.formShare.name);
       const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
@@ -426,11 +432,9 @@ export default defineComponent({
       this.messengerUrl = `https://t.me/share/url?url=${url}`;
       window.location.href = this.messengerUrl;
     },
-    shareLinkOnMessenger() {
-        const url = `https://www.kheang-nita-wedding.life`;
-        this.messengerUrl = `https://www.facebook.com/dialog/send?app_id=373794453282051&link=${encodeURI(url)}&redirect_uri=${encodeURI(window.location.href)}`;
-        
-        window.open(this.messengerUrl, '_blank');
+    shareLinkOnMS() {
+      const name = encodeURI(this.formShare.name);
+      this.messengerUrl = `fb-messenger://share/?link=${name}`;
     },
     copyLink() {
       const name = encodeURI(this.formShare.name);
@@ -1048,9 +1052,15 @@ export default defineComponent({
                 <button :disabled="!formShare.name" @click="copyLink" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Copy
                 </button>
-                <a :href="messengerUrl" target="_blank" class="code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <a :href="messengerUrl" target="_blank" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Open
                 </a>
+                <a :href="messengerUrl" target="_blank" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  MS2
+                </a>
+                <button :disabled="!formShare.name" @click="shareLinkOnMessenger" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Share Messenger
+                </button>
                 <button :disabled="!formShare.name" @click="shareLink" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share FB
                 </button>
