@@ -421,8 +421,7 @@ export default defineComponent({
       window.open(messengerUrl, '_blank');
     },
     shareLink() {
-      const name = encodeURI(this.formShare.name);
-      const url = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
+      const url = encodeURIComponent(`https://www.kheang-nita-wedding.life?to=${this.formShare.name}`); // Replace with the link you want to share
       this.messengerUrl = `fb-messenger://share?link=${url}`;
       window.location.href = this.messengerUrl;
     },
@@ -435,10 +434,19 @@ export default defineComponent({
     shareLinkOnMS() {
       const name = encodeURI(this.formShare.name);
       this.messengerUrl = `fb-messenger://share/?link=${name}`;
+      window.location.href = this.messengerUrl;
     },
     copyLink() {
       const name = encodeURI(this.formShare.name);
       this.messengerUrl = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
+      navigator.clipboard.writeText(this.messengerUrl).then(function() {
+          console.log('Link copied to clipboard');
+      }).catch(function(error) {
+          console.error('Error copying link: ', error);
+      });
+    },
+    copyLinkMS() {
+      this.messengerUrl = encodeURIComponent(`https://www.kheang-nita-wedding.life?to=${this.formShare.name}`); // Replace with the link you want to share
       navigator.clipboard.writeText(this.messengerUrl).then(function() {
           console.log('Link copied to clipboard');
       }).catch(function(error) {
@@ -1052,12 +1060,15 @@ export default defineComponent({
                 <button :disabled="!formShare.name" @click="copyLink" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Copy
                 </button>
+                <button :disabled="!formShare.name" @click="copyLinkMS" class="mr-2.5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Copy MS
+                </button>
                 <a :href="messengerUrl" target="_blank" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Open
                 </a>
-                <a :href="messengerUrl" target="_blank" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  MS2
-                </a>
+                <button :disabled="!formShare.name" @click="shareLinkOnMS" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Share MS
+                </button>
                 <button :disabled="!formShare.name" @click="shareLinkOnMessenger" class="mr-2.5 code inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Share Messenger
                 </button>
