@@ -438,7 +438,7 @@ export default defineComponent({
     },
     copyLink() {
       const name = encodeURI(this.formShare.name);
-      this.messengerUrl = `https://www.kheang-nita-wedding.life?to=${name}`; // Replace with the link you want to share
+      this.messengerUrl = `https://www.kheang-nita-wedding.life/?to=${name}`; // Replace with the link you want to share
       navigator.clipboard.writeText(this.messengerUrl).then(function() {
           console.log('Link copied to clipboard');
       }).catch(function(error) {
@@ -447,7 +447,7 @@ export default defineComponent({
     },
     copyLinkTxt() {
       const name = encodeURI(this.formShare.name);
-      this.messengerUrl = `សិរីមង្គលអាពាហ៍ពិពាហ៍ - ឃាង & និត្តា\nសូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយសអញ្ជើញចូលរួមពិធីរៀបអាពាហ៍ពិពាហ៍​ ដើម្បីប្រសិទ្ធពរជ័យ សិរីសួស្តីជ័យមង្គលក្នុង ពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍កូនប្រុស កូនស្រីរបស់យើងខ្ញុំ សូមអរគុណ។\nសូមធ្វើការចុចលើតំំណរខាងក្រោមដើំម្បីបើកធៀបការឌីជីថល\nhttps://www.kheang-nita-wedding.life?to=${name}`;
+      this.messengerUrl = `សិរីមង្គលអាពាហ៍ពិពាហ៍ - ឃាង & និត្តា\nសូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយសអញ្ជើញចូលរួមពិធីរៀបអាពាហ៍ពិពាហ៍​ ដើម្បីប្រសិទ្ធពរជ័យ សិរីសួស្តីជ័យមង្គលក្នុង ពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍កូនប្រុស កូនស្រីរបស់យើងខ្ញុំ សូមអរគុណ។\nសូមធ្វើការចុចលើតំំណរខាងក្រោមដើំម្បីបើកធៀបការឌីជីថល\nhttps://www.kheang-nita-wedding.life/?to=${name}`;
       navigator.clipboard.writeText(this.messengerUrl).then(function() {
           console.log('Link copied to clipboard');
       }).catch(function(error) {
